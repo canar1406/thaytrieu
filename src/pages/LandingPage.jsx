@@ -507,39 +507,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ═══ COURSES ═══ */}
-      <section id="method-section" className="section-pad">
-        <div className="container">
-          <div className="section-header sr-stagger sr-child text-center">
-            <div className="section-tag mx-auto">Lộ trình học</div>
-            <h2>Các khóa học <span className="grad">Nổi bật</span></h2>
-          </div>
-
-          <div className="course-cards sr-stagger sr-child">
-            <div className="c-card">
-              <div className="c-card-bg c-bg-1"></div>
-              <h3>Toán THPT Quốc Gia</h3>
-              <p>Ôn luyện toàn diện lớp 10, 11, 12. Bám sát ma trận đề thi BGD, từ mất gốc đến mục tiêu 8+, 9+.</p>
-              <ul className="c-features">
-                <li>✨ Chuyên đề Đại số & Hình học</li>
-                <li>✨ Luyện đề thực chiến 8+ 9+</li>
-                <li>✨ Hỗ trợ giải đáp 24/7</li>
-              </ul>
-            </div>
-            
-            <div className="c-card">
-              <div className="c-card-bg c-bg-2"></div>
-              <h3>Toán Chuyên / HSG</h3>
-              <p>Khơi dậy tư duy sáng tạo, đào sâu các bài toán khó dành cho học sinh giỏi cấp THCS và THPT.</p>
-              <ul className="c-features">
-                <li>✨ Bồi dưỡng tư duy nhạy bén</li>
-                <li>✨ Luyện đề thi HSG các cấp</li>
-                <li>✨ Đột phá giới hạn bản thân</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ═══ REGISTER ═══ */}
       <section id="register-section" className="section-pad register-section-bg">
