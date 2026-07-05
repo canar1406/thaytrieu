@@ -5,7 +5,9 @@
     "password": "123",
     "name": "Nguyễn Hoàng Nam",
     "role": "student",
-    "courses": ["toan-thpt"]
+    "courses": [
+      "toan-thpt"
+    ]
   },
   {
     "id": 2,
@@ -13,6 +15,17 @@
     "password": "admin",
     "name": "Phạm Liêu Hoàng Triều",
     "role": "admin",
-    "courses": ["toan-thpt", "toan-chuyen"]
+    "courses": [
+      "toan-thpt",
+      "toan-chuyen"
+    ]
+  },
+  {
+    "id": 3,
+    "email": "hoanglongvonguyen@gmail.com",
+    "password": "long123",
+    "name": "Võ Nguyễn Hoàng Long",
+    "role": "student",
+    "courses": []
   }
 ]
