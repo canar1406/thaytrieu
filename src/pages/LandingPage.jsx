@@ -163,22 +163,12 @@ const LandingPage = () => {
   // Sync login state
   useEffect(() => { setIsLoggedIn(!!localStorage.getItem('user')); }, []);
 
-  // Load danh sách khoá học thực tế từ course-list.json
+  // Load danh sách khoá học thực tế từ course-list.json (đồng bộ với trang Admin)
   useEffect(() => {
     fetch('/data/courses/course-list.json')
       .then(r => r.json())
-      .then(data => {
-        // Lọc bỏ khoá học test/trống
-        const valid = data.filter(c => c.title && c.totalLessons > 0 && c.title.toLowerCase() !== 'test');
-        setCourseList(valid);
-      })
-      .catch(() => {
-        // Fallback nếu không load được
-        setCourseList([
-          { id: 'thpt', title: 'Toán THPT Quốc Gia (lớp 10–12)' },
-          { id: 'chuyen', title: 'Toán Chuyên / HSG (lớp 6–12)' },
-        ]);
-      });
+      .then(data => setCourseList(data))
+      .catch(() => setCourseList([]));
   }, []);
 
   useGSAP(() => {
