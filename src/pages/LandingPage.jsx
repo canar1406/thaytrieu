@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -157,7 +157,29 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const isLoggedIn = !!localStorage.getItem('user');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('user'));
+  const [courseList, setCourseList] = useState([]);
+
+  // Sync login state
+  useEffect(() => { setIsLoggedIn(!!localStorage.getItem('user')); }, []);
+
+  // Load danh sách khoá học thực tế từ course-list.json
+  useEffect(() => {
+    fetch('/data/courses/course-list.json')
+      .then(r => r.json())
+      .then(data => {
+        // Lọc bỏ khoá học test/trống
+        const valid = data.filter(c => c.title && c.totalLessons > 0 && c.title.toLowerCase() !== 'test');
+        setCourseList(valid);
+      })
+      .catch(() => {
+        // Fallback nếu không load được
+        setCourseList([
+          { id: 'thpt', title: 'Toán THPT Quốc Gia (lớp 10–12)' },
+          { id: 'chuyen', title: 'Toán Chuyên / HSG (lớp 6–12)' },
+        ]);
+      });
+  }, []);
 
   useGSAP(() => {
     // ── Navbar drop-in
@@ -584,9 +606,10 @@ const LandingPage = () => {
                     <label>Khóa học quan tâm *</label>
                     <select name="course" className="form-control" required>
                       <option value="">-- Chọn khóa học --</option>
-                      <option value="Toán THPT Quốc Gia (lớp 10–12)">Toán THPT Quốc Gia (lớp 10–12)</option>
-                      <option value="Toán Chuyên / HSG (lớp 6–12)">Toán Chuyên / HSG (lớp 6–12)</option>
-                      <option value="Tư vấn thêm">Tư vấn thêm</option>
+                      {courseList.map(c => (
+                        <option key={c.id} value={c.title}>{c.title}</option>
+                      ))}
+                      <option value="Tư vấn thêm">💬 Tư vấn thêm</option>
                     </select>
                   </div>
                   <div className="input-group">
