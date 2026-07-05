@@ -161,42 +161,42 @@ const LandingPage = () => {
 
   useGSAP(() => {
     // ── Navbar drop-in
-    gsap.fromTo('.navbar', 
-      { y: -60, opacity: 0 }, 
+    gsap.fromTo('.navbar',
+      { y: -60, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }
     );
 
     // ── Hero LEFT: Staggered entrance matching reference
     const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.1 });
     heroTl
-      .fromTo('.hero-eyebrow',      
-        { y: 20, opacity: 0, scale: 0.9 }, 
+      .fromTo('.hero-eyebrow',
+        { y: 20, opacity: 0, scale: 0.9 },
         { y: 0, opacity: 1, scale: 1, duration: 0.45 })
-      .fromTo('.hero-title',        
-        { y: 40, opacity: 0 }, 
+      .fromTo('.hero-title',
+        { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6 }, '-=0.2')
-      .fromTo('.hero-desc',         
-        { y: 22, opacity: 0 }, 
+      .fromTo('.hero-desc',
+        { y: 22, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5 }, '-=0.3')
-      .fromTo('.stat-pill',         
-        { y: 18, opacity: 0 }, 
+      .fromTo('.stat-pill',
+        { y: 18, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.45, stagger: 0.1 }, '-=0.25')
-      .fromTo('.hero-cta-row .btn', 
-        { y: 14, opacity: 0, scale: 0.95 }, 
+      .fromTo('.hero-cta-row .btn',
+        { y: 14, opacity: 0, scale: 0.95 },
         { y: 0, opacity: 1, scale: 1, duration: 0.45, stagger: 0.12 }, '-=0.25');
 
     // ── Hero RIGHT: Portrait slides from right, badges pop in
-    gsap.fromTo('.teacher-portrait-card .portrait-frame', 
-      { x: 55, opacity: 0 }, 
+    gsap.fromTo('.teacher-portrait-card .portrait-frame',
+      { x: 55, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.4)', delay: 0.2 }
     );
 
-    gsap.fromTo('.badge-top-left, .badge-mid-left', 
-      { x: -35, opacity: 0 }, 
+    gsap.fromTo('.badge-top-left, .badge-mid-left',
+      { x: -35, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)', delay: 0.6, stagger: 0.15 }
     );
-    gsap.fromTo('.badge-bottom-right', 
-      { x: 35, opacity: 0 }, 
+    gsap.fromTo('.badge-bottom-right',
+      { x: 35, opacity: 0 },
       { x: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)', delay: 0.7 }
     );
 
@@ -272,7 +272,7 @@ const LandingPage = () => {
       <div className="blob blob-1" />
       <div className="blob blob-2" />
       <div className="blob blob-3" />
-      
+
       {/* ═══ MATH BACKGROUND ═══ */}
       <div className="math-bg-container">
         {/* Simple Symbols */}
@@ -331,8 +331,7 @@ const LandingPage = () => {
                 <span className="grad">từ nền tảng<br />đến đỉnh cao</span>
               </h1>
               <p className="hero-desc">
-                Học cùng thầy <strong>Phạm Liêu Hoàng Triều</strong> — Thủ Khoa 39/40 kỳ thi HSG Quốc Gia,
-                Giải Ba HSG Quốc Gia Toán 2025. Lộ trình cá nhân hóa, hỗ trợ 24/7.
+                Học cùng thầy <strong>Phạm Liêu Hoàng Triều</strong> - thủ khoa đầu vào chuyên Toán, giải Ba kì thi HSG quốc gia Toán 2026. Lộ trình cá nhân hoá phù hợp, giải đáp thắc mắc 24/7. Bí quyết độc quyền để đập tan nỗi sợ những con số qua tư duy của một thủ khoa.
               </p>
               <div className="hero-stats">
                 <div className="stat-pill"><strong>9.5</strong><span>Điểm Toán THPT</span></div>
@@ -440,7 +439,7 @@ const LandingPage = () => {
               </div>
 
               {/* Bar chart removed per user request */}
-              
+
               {/* Score table */}
               <div className="score-glass">
                 <h4>🏆 Bảng thành tích chi tiết</h4>
@@ -560,7 +559,7 @@ const LandingPage = () => {
       <footer className="footer">
         <div className="container footer-inner">
           <div className="footer-copy">
-            © 2025 Phạm Liêu Hoàng Triều · All rights reserved.<br/>
+            © 2025 Phạm Liêu Hoàng Triều · All rights reserved.<br />
             <span className="footer-credit">
               Designed & Developed by <a href="https://home.heavietnam.com/" target="_blank" rel="noopener noreferrer">Heavn</a>
             </span>

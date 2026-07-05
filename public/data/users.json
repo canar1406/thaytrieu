@@ -26,6 +26,11 @@
     "password": "long123",
     "name": "Võ Nguyễn Hoàng Long",
     "role": "student",
-    "courses": []
+    "courses": [],
+    "allowedCourses": [
+      "1",
+      "2",
+      "3"
+    ]
   }
 ]

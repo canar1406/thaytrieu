@@ -44,7 +44,7 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/data/users.json');
+      const response = await fetch('./data/users.json');
       const users = await response.json();
       const user = users.find(u => u.email === email && u.password === password);
       

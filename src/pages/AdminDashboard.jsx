@@ -248,6 +248,7 @@ const AdminDashboard = () => {
                       <th style={{ padding: '12px' }}>Email</th>
                       <th style={{ padding: '12px' }}>Mật khẩu</th>
                       <th style={{ padding: '12px' }}>Quyền</th>
+                      <th style={{ padding: '12px', minWidth: '200px' }}>Khóa học được xem</th>
                       <th style={{ padding: '12px' }}>Hành động</th>
                     </tr>
                   </thead>
@@ -263,6 +264,30 @@ const AdminDashboard = () => {
                             <option value="student">Học sinh</option>
                             <option value="admin">Admin</option>
                           </select>
+                        </td>
+                        <td style={{ padding: '12px' }}>
+                          {u.role === 'admin' ? (
+                            <span style={{color: 'var(--gray-500)', fontSize: '12px'}}>Admin xem tất cả</span>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto', border: '1px solid var(--gray-200)', padding: '8px', borderRadius: '4px', background: '#fafafa' }}>
+                              {courses.map(c => (
+                                <label key={c.id} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={(u.allowedCourses || []).includes(c.id)}
+                                    onChange={e => {
+                                      const allowed = u.allowedCourses || [];
+                                      const newAllowed = e.target.checked 
+                                        ? [...allowed, c.id]
+                                        : allowed.filter(id => id !== c.id);
+                                      handleChangeUser(u.id, 'allowedCourses', newAllowed);
+                                    }}
+                                  />
+                                  {c.title}
+                                </label>
+                              ))}
+                            </div>
+                          )}
                         </td>
                         <td style={{ padding: '12px' }}>
                           <button onClick={() => handleDeleteUser(u.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>Xóa</button>

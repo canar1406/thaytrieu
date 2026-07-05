@@ -48,11 +48,19 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    fetch('/data/courses/course-list.json')
+    if (!user) return;
+    fetch('./data/courses/course-list.json')
       .then(res => res.json())
-      .then(data => setCourses(data))
+      .then(data => {
+        if (user.role !== 'admin') {
+          const allowed = user.allowedCourses || [];
+          setCourses(data.filter(c => allowed.includes(c.id)));
+        } else {
+          setCourses(data);
+        }
+      })
       .catch(err => console.error("Error loading courses:", err));
-  }, []);
+  }, [user]);
 
   const chartData = {
     labels: ['Hoàn thành', 'Chưa học'],

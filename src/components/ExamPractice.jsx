@@ -27,7 +27,7 @@ export default function ExamPractice({ onBackToDashboard }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    fetch('/data/exams.json')
+    fetch('./data/exams.json')
       .then(res => res.json())
       .then(data => setExams(data))
       .catch(err => console.error("Error loading exams:", err));
