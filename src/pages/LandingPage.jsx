@@ -491,25 +491,6 @@ const LandingPage = () => {
                 <cite>— Phạm Liêu Hoàng Triều</cite>
               </div>
             </div>
-
-            {/* Value props */}
-            <div className="about-features sr-stagger sr-child">
-              <div className="feature-card">
-                <div className="feature-icon">🧠</div>
-                <h4>Tư duy logic</h4>
-                <p>Nắm vững bản chất vấn đề, tự suy luận ra công thức thay vì học vẹt.</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">⚡</div>
-                <h4>Giải nhanh trắc nghiệm</h4>
-                <p>Cung cấp mẹo giải nhanh, sử dụng Casio tối ưu thời gian phòng thi.</p>
-              </div>
-              <div className="feature-card">
-                <div className="feature-icon">📖</div>
-                <h4>Lộ trình cá nhân hóa</h4>
-                <p>Kiểm tra đầu vào và thiết kế bài giảng phù hợp với năng lực từng bạn.</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
