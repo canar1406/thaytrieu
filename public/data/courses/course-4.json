@@ -1,0 +1,60 @@
+{
+  "id": "4",
+  "title": "Lớp 11 cơ bản & Nâng cao",
+  "desc": "Làm chủ Lượng giác, Dãy số, Giới hạn và Hình học không gian Lớp 11 một cách dễ dàng.",
+  "teacher": "Thầy Hoàng Triều",
+  "duration": "20 giờ",
+  "totalLessons": 15,
+  "progress": 0,
+  "sections": [
+    {
+      "id": "c11-sec1",
+      "title": "Chương 1: Hàm số Lượng giác & Phương trình Lượng giác",
+      "duration": "140 phút",
+      "items": [
+        {
+          "id": "c11-f1",
+          "title": "Bài 1: Góc lượng giác và công thức lượng giác cần nhớ",
+          "duration": "35 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c11-f2",
+          "title": "Bài 2: Phương trình lượng giác cơ bản và thường gặp",
+          "duration": "45 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c11-f3",
+          "title": "Bộ đề thi kiểm tra 1 tiết Lượng giác có lời giải",
+          "duration": "25 trang",
+          "type": "pdf",
+          "url": "https://pdfobject.com/pdf/sample.pdf"
+        }
+      ]
+    },
+    {
+      "id": "c11-sec2",
+      "title": "Chương 2: Dãy số, Cấp số cộng & Cấp số nhân",
+      "duration": "100 phút",
+      "items": [
+        {
+          "id": "c11-f4",
+          "title": "Bài 1: Dãy số bị chặn, dãy số tăng giảm",
+          "duration": "30 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c11-f5",
+          "title": "Bài 2: Cấp số cộng và công thức tổng n số hạng",
+          "duration": "35 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        }
+      ]
+    }
+  ]
+}

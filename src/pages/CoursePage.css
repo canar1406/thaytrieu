@@ -1,0 +1,629 @@
+/* ============================================================
+   COURSE.CSS – macOS Liquid Glass (matching Dashboard style)
+   ============================================================ */
+
+/* ── Course-specific background (slightly deeper than default) ─ */
+/* Override the .couyen-app bg for course pages only */
+.couyen-app:has(.course-layout) {
+  --bg-page: #dce4f5;
+  --bg-image:
+    radial-gradient(rgba(0,122,255, 0.12) 2px, transparent 2px),
+    radial-gradient(rgba(0,122,255, 0.12) 2px, transparent 2px),
+    radial-gradient(ellipse 80% 60% at 10% 5%,  rgba(59,110,244,0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 70% at 85% 15%, rgba(90,200,250,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(94,92,230,0.22) 0%, transparent 70%);
+}
+
+/* ── Course Layout ─────────────────────────────────────────── */
+.course-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* ── Course Sidebar (TOC) ───────────────────────────────────── */
+.course-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(32px) saturate(200%) brightness(1.05);
+  -webkit-backdrop-filter: blur(32px) saturate(200%) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9),
+    0 8px 32px rgba(80, 100, 200, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  margin: 12px 0 12px 12px;
+}
+
+.course-sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.course-sidebar-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.course-overall-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary-600);
+}
+
+.course-overall-progress .progress-bar {
+  flex: 1;
+  background: rgba(59, 110, 244, 0.12);
+  height: 6px;
+  border-radius: 99px;
+}
+
+.course-overall-progress .progress-fill {
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-400));
+  height: 6px;
+  border-radius: 99px;
+  box-shadow: 0 0 8px rgba(59, 110, 244, 0.4);
+  transition: width 0.5s ease;
+}
+
+.course-sidebar-content {
+  flex: 1;
+  padding: 8px 0;
+}
+
+/* ── TOC Sections ───────────────────────────────────────────── */
+.toc-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.toc-section-header {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.toc-section-header:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.toc-section-info { flex: 1; padding-right: 12px; }
+
+.toc-section-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  line-height: 1.4;
+}
+
+.toc-section-meta {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.toc-section-toggle svg {
+  width: 14px;
+  height: 14px;
+  color: var(--gray-400);
+  transition: transform 0.25s ease;
+  stroke-width: 2.5;
+}
+
+.toc-section.open .toc-section-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* ── TOC Items ──────────────────────────────────────────────── */
+.toc-list { padding: 4px 0; }
+
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px 10px 28px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.toc-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+  border-left-color: rgba(59, 110, 244, 0.3);
+}
+
+.toc-item.active {
+  background: rgba(255, 255, 255, 0.85);
+  border-left-color: var(--primary-500);
+  box-shadow: 0 2px 10px rgba(59, 110, 244, 0.08);
+}
+
+.toc-item-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-500);
+  flex-shrink: 0;
+}
+
+.toc-item-icon svg { width: 14px; height: 14px; }
+
+.toc-item-icon.completed {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.3);
+  color: #34c759;
+}
+
+.toc-item.active .toc-item-icon {
+  background: rgba(59, 110, 244, 0.1);
+  border-color: rgba(59, 110, 244, 0.3);
+}
+
+.toc-item-content { flex: 1; min-width: 0; }
+
+.toc-item-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toc-item.active .toc-item-title { color: var(--primary-600); }
+
+.toc-item-duration {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+
+/* ── Course Main Area ───────────────────────────────────────── */
+.course-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* ── Mobile Overlay ─────────────────────────────────────────── */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 9;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+/* ── Course Main Header (Breadcrumb / Lesson Title) ─────────── */
+.course-main-header {
+  padding: 20px 28px 0;
+}
+
+.main-lesson-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+.main-lesson-meta {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
+
+/* ── Course Viewport ────────────────────────────────────────── */
+.course-viewport {
+  flex: 1;
+  padding: 20px 28px 32px;
+}
+
+/* ── Welcome / Home View ────────────────────────────────────── */
+.course-hero {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  padding: 6px;
+  margin-bottom: 24px;
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9),
+    0 8px 32px rgba(80, 100, 200, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.course-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 156, 255, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.course-hero-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--gray-900);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin: 0 0 10px;
+  background: linear-gradient(135deg, var(--gray-900), var(--primary-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.course-hero-desc {
+  font-size: 0.9rem;
+  color: var(--gray-600);
+  line-height: 1.65;
+  max-width: 640px;
+}
+
+/* ── Course Home Content ────────────────────────────────────── */
+.course-home-content { display: flex; flex-direction: column; gap: 16px; }
+
+.course-home-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.course-home-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.01em;
+}
+
+.course-home-badge {
+  background: rgba(59, 110, 244, 0.1);
+  color: var(--primary-600);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+  border: 1px solid rgba(59, 110, 244, 0.2);
+}
+
+.course-home-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Section Cards ──────────────────────────────────────────── */
+.ch-section {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    0 4px 16px rgba(80, 100, 200, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.ch-section:hover {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    0 8px 28px rgba(80, 100, 200, 0.1);
+  transform: translateY(-1px);
+}
+
+.ch-section-header {
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.55);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  letter-spacing: -0.01em;
+}
+
+.ch-list { padding: 6px 0; }
+
+.ch-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.ch-item:hover {
+  background: rgba(255, 255, 255, 0.65);
+  border-left-color: var(--primary-400);
+}
+
+.ch-item-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-500);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.ch-item-icon svg { width: 18px; height: 18px; }
+
+.ch-item.completed .ch-item-icon {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.3);
+  color: #34c759;
+}
+
+.ch-item:hover .ch-item-icon {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 110, 244, 0.15);
+}
+
+.ch-item-info { flex: 1; min-width: 0; }
+
+.ch-item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ch-item-meta {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.ch-item-action {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  color: var(--gray-400);
+}
+
+.ch-item-action svg { width: 16px; height: 16px; stroke-width: 2.5; }
+.ch-item:hover .ch-item-action { opacity: 1; }
+
+/* ── Video / PDF Player ─────────────────────────────────────── */
+.video-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: rgba(10, 12, 24, 0.95);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  display: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-container.active { display: block; }
+
+.video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.pdf-container {
+  width: 100%;
+  height: 80vh;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  display: none;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.pdf-container.active { display: block; }
+
+.pdf-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Topbar override for CoursePage ────────────────────────── */
+/* CoursePage uses the standard .topbar from CouyenCommon.css
+   but adds extra classes for back button + title layout */
+
+.topbar-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50%;
+}
+
+.topbar-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.topbar-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .course-sidebar { width: 260px; }
+}
+
+@media (max-width: 768px) {
+  .course-sidebar {
+    position: fixed;
+    left: 12px; top: 12px; bottom: 12px;
+    z-index: 100;
+    transform: translateX(-120%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 280px !important;
+  }
+
+  .course-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.12);
+  }
+
+  .mobile-overlay { display: none; }
+  .mobile-overlay.open { display: block; }
+
+  .course-viewport { padding: 16px; }
+  .course-hero { padding: 24px; }
+  .course-hero-title { font-size: 1.2rem; }
+
+  .lesson-nav-bar { flex-direction: column; gap: 10px; padding: 16px; }
+  .lesson-nav-btn { width: 100%; justify-content: center; }
+}
+
+/* ── Sidebar scroll fix (overflow scrollable inside rounded card) ── */
+.course-sidebar-content {
+  overflow-y: auto;
+}
+
+/* ── Prev / Next Lesson Navigation Bar ─────────────────────── */
+.lesson-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9),
+    0 4px 20px rgba(80, 100, 200, 0.07);
+}
+
+.lesson-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  color: #2C2C2E;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 1);
+  max-width: 38%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lesson-nav-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lesson-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.92);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(80, 100, 200, 0.12), inset 0 1px 1px rgba(255, 255, 255, 1);
+  color: #0066CC;
+}
+
+.lesson-nav-btn--next {
+  flex-direction: row-reverse;
+}
+
+.lesson-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lesson-nav-progress {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8E8E93;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 99px;
+  padding: 5px 14px;
+  white-space: nowrap;
+}

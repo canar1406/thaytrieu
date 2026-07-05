@@ -1,0 +1,103 @@
+[
+  {
+    "id": "De-kiem-tra-toan",
+    "title": "De-kiem-tra-toan",
+    "slug": "de-kiem-tra-toan",
+    "data": {
+      "part1_multipleChoice": [
+        {
+          "id": "p1_q1",
+          "question": "Đạo hàm của hàm số $y = x^3 - 3x^2 + 2$ là:",
+          "options": [
+            {
+              "key": "A",
+              "text": "$y' = 3x^2 - 6x$",
+              "isCorrect": true
+            },
+            {
+              "key": "B",
+              "text": "$y' = 3x^2 + 6x$",
+              "isCorrect": false
+            },
+            {
+              "key": "C",
+              "text": "$y' = x^2 - 2x$",
+              "isCorrect": false
+            },
+            {
+              "key": "D",
+              "text": "$y' = 3x^2 - 3x$",
+              "isCorrect": false
+            }
+          ]
+        },
+        {
+          "id": "p1_q2",
+          "question": "Tập xác định của hàm số $y = \\log_2(x-1)$ là:",
+          "options": [
+            {
+              "key": "A",
+              "text": "$(-\\infty; 1)$",
+              "isCorrect": false
+            },
+            {
+              "key": "B",
+              "text": "$(1; +\\infty)$",
+              "isCorrect": true
+            },
+            {
+              "key": "C",
+              "text": "$[1; +\\infty)$",
+              "isCorrect": false
+            },
+            {
+              "key": "D",
+              "text": "$\\mathbb{R} \\setminus \\{1\\}$",
+              "isCorrect": false
+            }
+          ]
+        }
+      ],
+      "part2_trueFalse": [
+        {
+          "id": "p2_q1",
+          "question": "Cho hàm số $f(x) = \\frac{2x - 1}{x + 1}$. Các mệnh đề sau đúng hay sai?",
+          "statements": [
+            {
+              "id": "a",
+              "text": "Tập xác định của hàm số là $\\mathbb{R} \\setminus \\{-1\\}$.",
+              "isTrue": true
+            },
+            {
+              "id": "b",
+              "text": "Tiệm cận đứng của đồ thị hàm số là đường thẳng $x = 1$.",
+              "isTrue": false
+            },
+            {
+              "id": "c",
+              "text": "Tiệm cận ngang của đồ thị hàm số là đường thẳng $y = 2$.",
+              "isTrue": true
+            },
+            {
+              "id": "d",
+              "text": "Đạo hàm của hàm số luôn âm trên từng khoảng xác định.",
+              "isTrue": false
+            }
+          ]
+        }
+      ],
+      "part3_shortAnswer": [
+        {
+          "id": "p3_q1",
+          "question": "Tìm giá trị lớn nhất của hàm số $f(x) = x^3 - 3x$ trên đoạn $[0; 2]$.",
+          "correctAnswer": "2"
+        },
+        {
+          "id": "p3_q2",
+          "question": "Một người gửi tiết kiệm 100 triệu đồng với lãi suất $6\\%$/năm, tính theo phương thức lãi kép. Sau bao nhiêu năm người đó thu được tổng số tiền cả gốc và lãi ít nhất là 200 triệu đồng? (Làm tròn đến năm gần nhất).",
+          "correctAnswer": "12"
+        }
+      ]
+    }
+  }
+]

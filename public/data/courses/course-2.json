@@ -1,0 +1,60 @@
+{
+  "id": "2",
+  "title": "Lớp 9 thi chuyên - Chinh Phục Điểm 10",
+  "desc": "Khóa học chuyên sâu dành cho học sinh mục tiêu vào các trường THPT Chuyên (KHTN, CSP, Ams...).",
+  "teacher": "Thầy Hoàng Triều",
+  "duration": "35 giờ",
+  "totalLessons": 18,
+  "progress": 100,
+  "sections": [
+    {
+      "id": "ch9-sec1",
+      "title": "Chuyên đề 1: Phương trình & Hệ phương trình nâng cao",
+      "duration": "150 phút",
+      "items": [
+        {
+          "id": "ch9-f1",
+          "title": "Bài 1: Phương trình vô tỷ & Kỹ thuật nhân liên hợp",
+          "duration": "40 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "ch9-f2",
+          "title": "Bài 2: Hệ phương trình đối xứng loại 1 và loại 2",
+          "duration": "45 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "ch9-f3",
+          "title": "Tuyển tập 100 đề thi chuyên Phương trình vô tỷ",
+          "duration": "35 trang",
+          "type": "pdf",
+          "url": "https://pdfobject.com/pdf/sample.pdf"
+        }
+      ]
+    },
+    {
+      "id": "ch9-sec2",
+      "title": "Chuyên đề 2: Bất đẳng thức & Cực trị Toán 9",
+      "duration": "180 phút",
+      "items": [
+        {
+          "id": "ch9-f4",
+          "title": "Bài 1: Bất đẳng thức AM-GM (Cauchy) & Kỹ thuật điểm rơi",
+          "duration": "50 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "ch9-f5",
+          "title": "Bài 2: Bất đẳng thức Bunyakovsky & Ứng dụng giải đề thi",
+          "duration": "45 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        }
+      ]
+    }
+  ]
+}

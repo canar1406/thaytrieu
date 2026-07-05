@@ -1,0 +1,60 @@
+{
+  "id": "3",
+  "title": "Lớp 10 cơ bản & Nâng cao",
+  "desc": "Hệ thống toàn bộ kiến thức Toán Lớp 10 theo chương trình GDPT mới (Cánh Diều, KNTT, CTST).",
+  "teacher": "Thầy Hoàng Triều",
+  "duration": "45 giờ",
+  "totalLessons": 30,
+  "progress": 25,
+  "sections": [
+    {
+      "id": "c10-sec1",
+      "title": "Chương 1: Mệnh đề Toán học & Tập hợp",
+      "duration": "110 phút",
+      "items": [
+        {
+          "id": "c10-f1",
+          "title": "Bài 1: Mệnh đề, mệnh đề chứa biến và phủ định",
+          "duration": "30 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c10-f2",
+          "title": "Bài 2: Các phép toán trên tập hợp (Giao, Hợp, Hiệu)",
+          "duration": "35 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c10-f3",
+          "title": "Bài tập tự luyện Mệnh đề & Tập hợp",
+          "duration": "12 trang",
+          "type": "pdf",
+          "url": "https://pdfobject.com/pdf/sample.pdf"
+        }
+      ]
+    },
+    {
+      "id": "c10-sec2",
+      "title": "Chương 2: Bất phương trình bậc nhất hai ẩn",
+      "duration": "90 phút",
+      "items": [
+        {
+          "id": "c10-f4",
+          "title": "Bài 1: Biểu diễn miền nghiệm của bất phương trình",
+          "duration": "25 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        },
+        {
+          "id": "c10-f5",
+          "title": "Bài 2: Ứng dụng giải bài toán tối ưu kinh tế",
+          "duration": "30 phút",
+          "type": "video",
+          "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+        }
+      ]
+    }
+  ]
+}
