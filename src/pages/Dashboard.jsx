@@ -20,11 +20,24 @@ const Dashboard = () => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
+    if (!storedUser) {
       navigate('/login');
+      return;
     }
+    const localUser = JSON.parse(storedUser);
+    // Re-fetch fresh user data from server to get latest allowedCourses from admin
+    fetch('./data/users.json')
+      .then(r => r.json())
+      .then(users => {
+        const freshUser = users.find(u => u.id === localUser.id);
+        if (freshUser) {
+          localStorage.setItem('user', JSON.stringify(freshUser));
+          setUser(freshUser);
+        } else {
+          setUser(localUser);
+        }
+      })
+      .catch(() => setUser(localUser));
   }, [navigate]);
 
   useEffect(() => {
