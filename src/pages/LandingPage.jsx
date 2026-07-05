@@ -259,9 +259,9 @@ const LandingPage = () => {
     setIsSubmitting(true);
     
     try {
-      const SERVICE_ID = 'YOUR_SERVICE_ID'; // Thay bằng Service ID của bạn
+      const SERVICE_ID = 'service_uc5rns9';
       const TEMPLATE_ID = 'template_mc5lh48';
-      const PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // Thay bằng Public Key của bạn
+      const PUBLIC_KEY = 'AoPRyLOGRSwXBhPRW';
 
       // Nếu bạn đã điền Key thì gửi, nếu chưa thì chỉ mô phỏng gửi thành công
       if (SERVICE_ID !== 'YOUR_SERVICE_ID') {
