@@ -91,7 +91,7 @@ app.post('/api/exams', (req, res) => {
 // Github Push
 app.post('/api/github-push', (req, res) => {
   console.log('Starting GitHub Push...');
-  exec('git add . && (git commit -m "Admin Update Data" || true) && git push', { cwd: __dirname }, (error, stdout, stderr) => {
+  exec('git add . && git commit -m "Admin Update Data" & git push', { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`);
       return res.status(500).json({ success: false, error: stderr || error.message });
