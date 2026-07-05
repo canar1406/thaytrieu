@@ -468,12 +468,27 @@ const LandingPage = () => {
               {/* Score table */}
               <div className="score-glass">
                 <h4>🏆 Bảng thành tích chi tiết</h4>
-                <div className="score-list">
-                  <div className="score-row"><span>Toán học</span><strong>9.6</strong></div>
-                  <div className="score-row"><span>Ngữ văn</span><strong>9.75</strong></div>
-                  <div className="score-row"><span>Tiếng Anh</span><strong>9.8</strong></div>
-                  <div className="score-row total"><span>Tổng điểm Khối D01</span><strong>29.15 (Top 1 Bến Tre)</strong></div>
-                </div>
+                <table className="score-table">
+                  <thead>
+                    <tr><th>Kỳ thi</th><th>Hạng mục</th><th>Kết quả</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>THPT Quốc Gia</td><td>Môn Toán</td><td className="score-hi">9,5 / 10</td></tr>
+                    <tr><td>HSG Tỉnh Long An</td><td>Vòng chọn tỉnh</td><td className="score-hi">Giải Nhì</td></tr>
+                    <tr><td>Olympic 30/4</td><td>Khu vực Miền Nam</td><td className="score-hi">HCĐ</td></tr>
+                    <tr><td>Olympic MTTNY</td><td>Mở rộng</td><td className="score-hi">Giải Nhất</td></tr>
+                    <tr><td>HSG Quốc Gia (sơ bộ)</td><td>Thủ Khoa</td><td className="score-hi">39 / 40</td></tr>
+                    <tr><td>HSG Quốc Gia (QG)</td><td>Chung kết</td><td className="score-hi">Giải Ba</td></tr>
+                    <tr><td>IGO Iran</td><td>Hình Học QT</td><td className="score-hi">Aluminium</td></tr>
+                    <tr><td>ĐH Sư Phạm</td><td>Tuyển thẳng 2 trường</td><td className="score-hi">HN & TP.HCM</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Quote Block Moved Below */}
+              <div className="teacher-quote-block">
+                <p>"Là một sinh viên ngành Sư Phạm Toán với niềm đam mê với những con số, mình mong muốn được truyền kinh nghiệm và kỹ năng tư duy độc lập đến các học sinh đam mê Toán."</p>
+                <cite>— Phạm Liêu Hoàng Triều</cite>
               </div>
             </div>
 
