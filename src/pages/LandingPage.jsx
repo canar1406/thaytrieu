@@ -468,16 +468,12 @@ const LandingPage = () => {
               {/* Score table */}
               <div className="score-glass">
                 <h4>🏆 Bảng thành tích chi tiết</h4>
-                <table className="score-table">
-                  <thead>
-                    <tr><th>Kỳ thi</th><th>Hạng mục</th><th>Kết quả</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>THPT Quốc Gia</td><td>Môn Toán</td><td className="score-hi">9,5 / 10</td></tr>
-                <div className="score-row"><span>Toán học</span><strong>9.6</strong></div>
-                <div className="score-row"><span>Ngữ văn</span><strong>9.75</strong></div>
-                <div className="score-row"><span>Tiếng Anh</span><strong>9.8</strong></div>
-                <div className="score-row total"><span>Tổng điểm Khối D01</span><strong>29.15 (Top 1 Bến Tre)</strong></div>
+                <div className="score-list">
+                  <div className="score-row"><span>Toán học</span><strong>9.6</strong></div>
+                  <div className="score-row"><span>Ngữ văn</span><strong>9.75</strong></div>
+                  <div className="score-row"><span>Tiếng Anh</span><strong>9.8</strong></div>
+                  <div className="score-row total"><span>Tổng điểm Khối D01</span><strong>29.15 (Top 1 Bến Tre)</strong></div>
+                </div>
               </div>
             </div>
 
