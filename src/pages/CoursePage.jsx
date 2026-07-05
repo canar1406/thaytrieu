@@ -370,7 +370,7 @@ const CoursePage = () => {
                   <>
                     <div className="course-hero">
                       <div className="course-cover-banner" style={{ borderRadius: '15px', overflow: 'hidden', boxShadow: '0 8px 28px rgba(0, 102, 204, 0.15), 0 2px 8px rgba(0,0,0,0.06)', border: '1px solid rgba(255, 255, 255, 0.8)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)' }}>
-                        <img src="/1783264418835_6184149828822151336_6184149828822151336_3208d6bfda3f1da2241a23a53a628ada.jpg" alt="Course Cover" style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', objectPosition: 'center', display: 'block', transition: 'transform 0.4s ease' }} />
+                        <img src="./1783264418835_6184149828822151336_6184149828822151336_3208d6bfda3f1da2241a23a53a628ada.jpg" alt="Course Cover" style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', objectPosition: 'center', display: 'block', transition: 'transform 0.4s ease' }} />
                       </div>
                     </div>
                     

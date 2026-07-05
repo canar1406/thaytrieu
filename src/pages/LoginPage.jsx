@@ -98,7 +98,7 @@ const LoginPage = () => {
       <div className="login-center-wrapper">
         <div className="login-box" ref={formRef}>
           <div className="login-brand-centered">
-            <img src="/logo.png" alt="Logo" className="login-logo-img" />
+            <img src="./logo.png" alt="Logo" className="login-logo-img" />
             <h2>Đăng Nhập</h2>
             <p>Hệ thống quản lý học tập cá nhân hóa</p>
           </div>
