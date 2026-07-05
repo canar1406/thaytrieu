@@ -257,14 +257,39 @@ const LandingPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Uncomment + fill credentials from https://emailjs.com:
-    // const SERVICE_ID='YOUR_SERVICE_ID', TEMPLATE_ID='YOUR_TEMPLATE_ID', PUBLIC_KEY='YOUR_PUBLIC_KEY';
-    // await emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY);
-    setTimeout(() => {
+    
+    try {
+      const SERVICE_ID = 'YOUR_SERVICE_ID'; // Thay bằng Service ID của bạn
+      const TEMPLATE_ID = 'template_mc5lh48';
+      const PUBLIC_KEY = 'YOUR_PUBLIC_KEY'; // Thay bằng Public Key của bạn
+
+      // Nếu bạn đã điền Key thì gửi, nếu chưa thì chỉ mô phỏng gửi thành công
+      if (SERVICE_ID !== 'YOUR_SERVICE_ID') {
+        const form = formRef.current;
+        const templateParams = {
+          to_name: 'Thầy Triều',
+          from_name: form.user_name.value,
+          student_name: form.user_name.value,
+          phone: form.user_phone.value,
+          email: form.user_email.value,
+          course: form.user_course.options[form.user_course.selectedIndex].text,
+          message: form.user_message.value
+        };
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
+      } else {
+        // Mô phỏng delay nếu chưa cấu hình (để test UI)
+        await new Promise(r => setTimeout(r, 1400));
+        console.warn('⚠️ Vui lòng điền SERVICE_ID và PUBLIC_KEY cho EmailJS trong file LandingPage.jsx');
+      }
+      
       setIsSubmitting(false);
       setSubmitSuccess(true);
       formRef.current?.reset();
-    }, 1400);
+    } catch (error) {
+      console.error('Lỗi khi gửi email:', error);
+      setIsSubmitting(false);
+      alert('Có lỗi xảy ra khi gửi đăng ký. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua Zalo.');
+    }
   };
 
   return (
