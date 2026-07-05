@@ -39,4 +39,4 @@ echo =============================================================
 echo MOI THU DA SAN SANG!
 echo Trinh duyet se tu dong mo trang Admin ngay bay gio...
 timeout /t 3 >nul
-start http://localhost:5173/admin
+start http://localhost:5173/#/admin
