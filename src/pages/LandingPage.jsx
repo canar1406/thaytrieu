@@ -268,11 +268,11 @@ const LandingPage = () => {
         const form = formRef.current;
         const templateParams = {
           to_name: 'Thầy Triều',
-          from_name: form.user_name.value,
-          student_name: form.user_name.value,
-          phone: form.user_phone.value,
-          email: form.user_email.value,
-          course: form.user_course.options[form.user_course.selectedIndex].text,
+          from_name: form.student_name.value,
+          student_name: form.student_name.value,
+          phone: form.phone.value,
+          email: form.email.value,
+          course: form.course.options[form.course.selectedIndex].text,
           message: form.user_message.value
         };
         await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY);
