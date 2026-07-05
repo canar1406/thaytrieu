@@ -12,6 +12,11 @@ const CoursePage = () => {
   const [registeredCoursesList, setRegisteredCoursesList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [user] = useState(() => {
+    const saved = localStorage.getItem('currentUser');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
@@ -176,10 +181,12 @@ const CoursePage = () => {
     return Math.round((compSet.size / totalLessons) * 100);
   };
 
-  const dynamicCoursesList = registeredCoursesList.map(course => ({
-    ...course,
-    progress: getDynamicProgress(course.id, course.progress, course.totalLessons)
-  }));
+  const dynamicCoursesList = registeredCoursesList
+    .filter(course => !user || user.role === 'admin' || (user.allowedCourses || []).includes(course.id))
+    .map(course => ({
+      ...course,
+      progress: getDynamicProgress(course.id, course.progress, course.totalLessons)
+    }));
 
   const currentIndex = currentItem ? allItems.findIndex(i => i.id === currentItem.id) : -1;
   const prevItem = currentIndex > 0 ? allItems[currentIndex - 1] : null;
@@ -212,10 +219,10 @@ const CoursePage = () => {
                 <div className="sidebar-registered-courses" style={{ padding: '12px 14px', borderBottom: '1px solid rgba(255,255,255,0.6)', marginBottom: '8px' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#636366', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span>Khóa học đã đăng ký</span>
-                    <span style={{ background: 'rgba(0,102,204,0.12)', color: '#0066CC', padding: '2px 8px', borderRadius: '10px', fontSize: '0.68rem', fontWeight: 700 }}>5 khóa</span>
+                    <span style={{ background: 'rgba(0,102,204,0.12)', color: '#0066CC', padding: '2px 8px', borderRadius: '10px', fontSize: '0.68rem', fontWeight: 700 }}>{dynamicCoursesList.length} khóa</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {registeredCoursesList.map(rc => {
+                    {dynamicCoursesList.map(rc => {
                       const isCurrent = rc.id === (id || '1');
                       return (
                         <Link
@@ -332,7 +339,7 @@ const CoursePage = () => {
               <div className="course-main-header">
                 <div>
                   <h1 className="main-lesson-title">
-                    {currentItem ? currentItem.title : `Chào mừng đến với khóa học của ${dummyCourseData.teacher}`}
+                    {currentItem ? currentItem.title : `Chào mừng đến với khóa học của ${dummyCourseData.teacher || 'Thầy Triều'}`}
                   </h1>
                   {currentItem ? (
                     <div className="main-lesson-meta" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px', flexWrap: 'wrap' }}>
