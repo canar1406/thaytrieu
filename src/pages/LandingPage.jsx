@@ -474,41 +474,65 @@ const LandingPage = () => {
                   </thead>
                   <tbody>
                     <tr><td>THPT Quốc Gia</td><td>Môn Toán</td><td className="score-hi">9,5 / 10</td></tr>
-                    <tr><td>HSG Tỉnh Long An</td><td>Vòng chọn tỉnh</td><td className="score-hi">Giải Nhì</td></tr>
-                    <tr><td>Olympic 30/4</td><td>Khu vực Miền Nam</td><td className="score-hi">HCĐ</td></tr>
-                    <tr><td>Olympic MTTNY</td><td>Mở rộng</td><td className="score-hi">Giải Nhất</td></tr>
-                    <tr><td>HSG Quốc Gia (sơ bộ)</td><td>Thủ Khoa</td><td className="score-hi">39 / 40</td></tr>
-                    <tr><td>HSG Quốc Gia (QG)</td><td>Chung kết</td><td className="score-hi">Giải Ba</td></tr>
-                    <tr><td>IGO Iran</td><td>Hình Học QT</td><td className="score-hi">Aluminium</td></tr>
-                    <tr><td>ĐH Sư Phạm</td><td>Tuyển thẳng 2 trường</td><td className="score-hi">HN & TP.HCM</td></tr>
-                  </tbody>
-                </table>
+                <div className="score-row"><span>Toán học</span><strong>9.6</strong></div>
+                <div className="score-row"><span>Ngữ văn</span><strong>9.75</strong></div>
+                <div className="score-row"><span>Tiếng Anh</span><strong>9.8</strong></div>
+                <div className="score-row total"><span>Tổng điểm Khối D01</span><strong>29.15 (Top 1 Bến Tre)</strong></div>
               </div>
+            </div>
 
-              {/* Quote Block Moved Below */}
-              <div className="teacher-quote-block">
-                <p>"Là một sinh viên ngành Sư Phạm Toán với niềm đam mê với những con số, mình mong muốn được truyền kinh nghiệm và kỹ năng tư duy độc lập đến các học sinh đam mê Toán."</p>
-                <cite>— Phạm Liêu Hoàng Triều</cite>
+            {/* Value props */}
+            <div className="about-features sr-stagger sr-child">
+              <div className="feature-card">
+                <div className="feature-icon">🧠</div>
+                <h4>Tư duy logic</h4>
+                <p>Nắm vững bản chất vấn đề, tự suy luận ra công thức thay vì học vẹt.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">⚡</div>
+                <h4>Giải nhanh trắc nghiệm</h4>
+                <p>Cung cấp mẹo giải nhanh, sử dụng Casio tối ưu thời gian phòng thi.</p>
+              </div>
+              <div className="feature-card">
+                <div className="feature-icon">📖</div>
+                <h4>Lộ trình cá nhân hóa</h4>
+                <p>Kiểm tra đầu vào và thiết kế bài giảng phù hợp với năng lực từng bạn.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ COMMITMENTS ═══ */}
-      <section className="section-pad">
+      {/* ═══ COURSES ═══ */}
+      <section id="method-section" className="section-pad">
         <div className="container">
-          <div className="section-head sr">
-            <div className="section-tag">Cam kết</div>
-            <h2>Điều thầy Triều <span className="grad">cam kết</span> với học sinh</h2>
+          <div className="section-header sr-stagger sr-child text-center">
+            <div className="section-tag mx-auto">Lộ trình học</div>
+            <h2>Các khóa học <span className="grad">Nổi bật</span></h2>
           </div>
-          <div className="commit-grid sr-stagger">
-            {COMMITS.map((c, i) => (
-              <div key={i} className="commit-card sr-child">
-                <div className="commit-icon">{c.icon}</div>
-                <p>{c.text}</p>
-              </div>
-            ))}
+
+          <div className="course-cards sr-stagger sr-child">
+            <div className="c-card">
+              <div className="c-card-bg c-bg-1"></div>
+              <h3>Toán THPT Quốc Gia</h3>
+              <p>Ôn luyện toàn diện lớp 10, 11, 12. Bám sát ma trận đề thi BGD, từ mất gốc đến mục tiêu 8+, 9+.</p>
+              <ul className="c-features">
+                <li>✨ Chuyên đề Đại số & Hình học</li>
+                <li>✨ Luyện đề thực chiến 8+ 9+</li>
+                <li>✨ Hỗ trợ giải đáp 24/7</li>
+              </ul>
+            </div>
+            
+            <div className="c-card">
+              <div className="c-card-bg c-bg-2"></div>
+              <h3>Toán Chuyên / HSG</h3>
+              <p>Khơi dậy tư duy sáng tạo, đào sâu các bài toán khó dành cho học sinh giỏi cấp THCS và THPT.</p>
+              <ul className="c-features">
+                <li>✨ Bồi dưỡng tư duy nhạy bén</li>
+                <li>✨ Luyện đề thi HSG các cấp</li>
+                <li>✨ Đột phá giới hạn bản thân</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -540,28 +564,37 @@ const LandingPage = () => {
                 </div>
               ) : (
                 <form ref={formRef} onSubmit={handleSubmit}>
+                  {/* Các biến ẩn gửi cho template */}
+                  <input type="hidden" name="to_name" value="Thầy Triều" />
+                  
                   <h3>Thông tin đăng ký học thử</h3>
                   <div className="form-row-2">
                     <div className="input-group">
                       <label>Họ và tên *</label>
-                      <input name="user_name" type="text" className="form-control" required placeholder="Nguyễn Văn A" />
+                      <input name="student_name" type="text" className="form-control" required placeholder="Nguyễn Văn A" 
+                        onChange={(e) => {
+                          const hiddenFromName = document.getElementById('hidden_from_name');
+                          if (hiddenFromName) hiddenFromName.value = e.target.value;
+                        }}
+                      />
+                      <input type="hidden" name="from_name" id="hidden_from_name" />
                     </div>
                     <div className="input-group">
                       <label>Số điện thoại (Zalo) *</label>
-                      <input name="user_phone" type="tel" className="form-control" required placeholder="0901 234 567" />
+                      <input name="phone" type="tel" className="form-control" required placeholder="0901 234 567" />
                     </div>
                   </div>
                   <div className="input-group">
                     <label>Email</label>
-                    <input name="user_email" type="email" className="form-control" placeholder="email@gmail.com" />
+                    <input name="email" type="email" className="form-control" placeholder="email@gmail.com" />
                   </div>
                   <div className="input-group">
                     <label>Khóa học quan tâm *</label>
-                    <select name="user_course" className="form-control" required>
+                    <select name="course" className="form-control" required>
                       <option value="">-- Chọn khóa học --</option>
-                      <option value="thpt">Toán THPT Quốc Gia (lớp 10–12)</option>
-                      <option value="chuyen">Toán Chuyên / HSG (lớp 6–12)</option>
-                      <option value="other">Tư vấn thêm</option>
+                      <option value="Toán THPT Quốc Gia (lớp 10–12)">Toán THPT Quốc Gia (lớp 10–12)</option>
+                      <option value="Toán Chuyên / HSG (lớp 6–12)">Toán Chuyên / HSG (lớp 6–12)</option>
+                      <option value="Tư vấn thêm">Tư vấn thêm</option>
                     </select>
                   </div>
                   <div className="input-group">
