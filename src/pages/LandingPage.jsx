@@ -301,7 +301,7 @@ const LandingPage = () => {
       <nav className="navbar">
         <div className="container navbar-inner">
           <div className="nav-logo">
-            <img src="./logo.png" alt="Toán Thầy Triều" className="logo-icon" />
+            <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" />
             <span>Toán Thầy Triều</span>
           </div>
           <div className="nav-links">

@@ -144,7 +144,7 @@ const Dashboard = () => {
             <div className="topbar-wrapper">
               <header className="topbar">
               <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src="./logo.png" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
+                <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
                 <span style={{ fontWeight: 800, fontSize: '1.1rem', background: 'linear-gradient(135deg, var(--primary-600), var(--primary-400))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Toán Thầy Triều</span>
               </div>
               
