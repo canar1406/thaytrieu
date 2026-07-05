@@ -495,7 +495,7 @@ const AdminDashboard = () => {
                 <strong>💡 Hướng dẫn lưu file Đề thi</strong>
                 <p style={{ margin: '8px 0 0 0' }}>
                   Thầy có thể soạn đề thi bằng Markdown (.md) hoặc JSON. Hãy tạo file đề thi và lưu vào thư mục <code>public/data/exams/</code>. <br/>
-                  Sau đó, nhập đường dẫn vào ô bên dưới (ví dụ: <code>/data/exams/de-thi-1.md</code> hoặc <code>/data/exams/de-kiem-tra-toan.json</code>).
+                  Sau đó, nhập đường dẫn vào ô bên dưới (ví dụ: <code>./data/exams/de-thi-1.md</code> hoặc <code>./data/exams/de-kiem-tra-toan.json</code>).
                 </p>
               </div>
 
@@ -506,7 +506,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Đường dẫn file (Markdown hoặc JSON):</label>
-                  <input value={currentExam.fileUrl || ''} onChange={e => setCurrentExam({...currentExam, fileUrl: e.target.value})} className="input-field" placeholder="Ví dụ: /data/exams/de-thi-1.md" />
+                  <input value={currentExam.fileUrl || ''} onChange={e => setCurrentExam({...currentExam, fileUrl: e.target.value})} className="input-field" placeholder="Ví dụ: ./data/exams/de-thi-1.md" />
                 </div>
               </div>
             </div>

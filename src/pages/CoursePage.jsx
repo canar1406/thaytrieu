@@ -15,8 +15,8 @@ const CoursePage = () => {
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
-      fetch(`/data/courses/course-${id || '1'}.json`).then(r => r.json()),
-      fetch(`/data/courses/course-list.json`).then(r => r.json())
+      fetch(`./data/courses/course-${id || '1'}.json`).then(r => r.json()),
+      fetch(`./data/courses/course-list.json`).then(r => r.json())
     ])
     .then(([courseData, courseList]) => {
       setDummyCourseData(courseData);

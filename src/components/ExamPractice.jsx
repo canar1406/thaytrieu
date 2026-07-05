@@ -61,7 +61,8 @@ export default function ExamPractice({ onBackToDashboard }) {
 
     if (exam.fileUrl) {
       try {
-        const res = await fetch(exam.fileUrl);
+        const url = exam.fileUrl.startsWith('/') ? '.' + exam.fileUrl : exam.fileUrl;
+        const res = await fetch(url);
         if (exam.fileUrl.endsWith('.json')) {
           const fetchedData = await res.json();
           setSelectedExam({ ...exam, data: fetchedData.data || fetchedData });
