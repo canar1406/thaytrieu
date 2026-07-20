@@ -1,277 +1,289 @@
-# 📚 Toán Thầy Triều — Nền Tảng Học Trực Tuyến
+# Toán Thầy Triều — Hướng dẫn sử dụng
 
-> Một nền tảng học Toán online toàn diện, thiết kế theo phong cách **Glassmorphism** hiện đại, giúp học sinh học tập và giáo viên quản lý nội dung dễ dàng mà không cần biết lập trình.
+Website học Toán trực tuyến dành cho học viên của thầy Triều.
 
----
+**Địa chỉ website:** https://canar1406.github.io/thaytrieu/
 
-## ✨ Toàn Bộ Tính Năng Của Website
+Website sử dụng:
 
-### 🌐 Trang Chủ (Landing Page)
-- Giao diện đẹp, hiện đại với hiệu ứng cuộn mượt (GSAP animations)
-- Hiển thị thông tin giáo viên, thành tích, bảng thành tích thi cử
-- Biểu đồ radar năng lực chuyên môn (Chart.js)
-- **Form đăng ký học thử**: Tự động gửi email về hộp thư của thầy qua EmailJS
-- **Danh sách khoá học trong form** tự động đồng bộ với danh sách thật trên hệ thống (real-time, không cần sửa code)
-- Nút "Đăng nhập / Vào học" tùy theo trạng thái đăng nhập
+- GitHub Pages để hiển thị giao diện.
+- Supabase để đăng nhập, lưu dữ liệu và kiểm tra quyền xem khóa học.
+- Học viên chỉ đọc được những khóa đã được thầy cấp quyền.
 
-### 🔐 Đăng Nhập / Xác Thực
-- Học sinh đăng nhập bằng **Email + Mật khẩu** do thầy cấp
-- Hệ thống kiểm tra quyền xem khoá học — học sinh chỉ vào được khoá học được phép
-
-### 📊 Dashboard Học Sinh
-- Biểu đồ tiến độ học tập dạng Doughnut (đã hoàn thành / còn lại)
-- **Đồng hồ đếm ngược** đến kỳ thi THPT Quốc Gia
-- **Lịch học tuần** hiển thị các buổi học, livestream, bài tập theo ngày
-- Danh sách **khoá học được phép xem** (được thầy cấp quyền)
-
-### 📖 Hệ Thống Khoá Học (Course Player)
-- Nội dung khoá học (video, tài liệu, bài tập) được tổ chức theo **chương học**
-- Tự động nhận diện link **YouTube** → chuyển sang embed video
-- Tự động nhận diện link **Google Drive** → chuyển sang chế độ xem tài liệu trực tiếp
-- Học sinh đánh dấu **hoàn thành bài học**, tiến độ được lưu lại
-
-### 📝 Luyện Đề Thi Tương Tác
-- Hỗ trợ **công thức toán học** (LaTeX/KaTeX) hiển thị đẹp như sách giáo khoa
-- **3 loại câu hỏi** theo chuẩn Bộ GD&ĐT:
-  - Phần I: Trắc nghiệm 4 lựa chọn (A/B/C/D)
-  - Phần II: Đúng/Sai với điểm thành phần
-  - Phần III: Điền đáp án số ngắn
-- **Đồng hồ đếm ngược** trong khi thi
-- **Bảng câu hỏi** để nhảy nhanh giữa các câu
-- **Tự động chấm điểm** và xem **lời giải chi tiết** sau khi nộp bài
-
-### 🛠️ Trang Quản Trị Admin (Admin Tool)
-- Đăng nhập bảo mật bằng email + mật khẩu Admin
-- **Quản lý Học sinh**: Thêm, sửa, xóa, cấp quyền xem khoá học
-- **Quản lý Khoá học**: Tạo/xóa khoá học, thêm chương, bài học (video/PDF)
-- **Quản lý Đề thi**: Thêm, xóa đề thi luyện tập
-- **Đồng bộ lên Web (1 nút bấm)**: Tự động đẩy toàn bộ thay đổi lên trang web chính thức
+> Không đưa mật khẩu, Secret Key hoặc Service Role Key lên GitHub, Zalo, Facebook hay ảnh chụp màn hình.
 
 ---
 
-## 👨‍🏫 HƯỚNG DẪN SỬ DỤNG TRANG ADMIN — DÀNH CHO THẦY TRIỀU
+## 1. Hướng dẫn dành cho học viên
 
-> 💡 **Không cần biết lập trình!** Trang Admin được thiết kế để bất kỳ ai cũng có thể dùng được.
+### Đăng nhập
 
----
+1. Mở website: https://canar1406.github.io/thaytrieu/
+2. Bấm **Đăng nhập**.
+3. Nhập email và mật khẩu được thầy cung cấp.
+4. Bấm **Vào lớp học**.
 
-### BƯỚC 1 — Khởi động hệ thống (Làm mỗi lần dùng Admin)
+Sau khi đăng nhập, học viên chỉ nhìn thấy những khóa học đã được cấp.
 
-Trước khi vào trang Admin, cần chạy 2 chương trình nền:
+### Mở khóa học
 
-1. Mở thư mục `triều` trên màn hình desktop
-2. **Bấm đúp chuột** vào file **`start-admin.bat`** → Cửa sổ đen hiện ra, **KHÔNG đóng cửa sổ đen này lại!**
-3. Mở trình duyệt (Chrome/Edge), vào địa chỉ: **`http://localhost:5173/admin`**
-4. Đăng nhập bằng **Email Admin** và **Mật khẩu Admin** của thầy
+1. Trong Dashboard, bấm mục **Khóa học** ở menu bên trái.
+2. Chọn khóa muốn học.
+3. Chọn chương và bài học.
+4. Video hoặc PDF sẽ xuất hiện ở phần chính.
 
-> ⚠️ **Nếu không chạy `start-admin.bat` trước thì trang Admin sẽ báo lỗi và không lưu được gì!**
+Nếu không nhìn thấy khóa đã đăng ký, hãy liên hệ thầy để kiểm tra quyền.
 
----
+### Làm đề thi
 
-### BƯỚC 2 — Quản lý Học Sinh
+1. Trong Dashboard, chọn **Luyện đề**.
+2. Chọn đề thi.
+3. Bấm **Bắt đầu làm bài**.
+4. Hoàn thành các câu hỏi rồi bấm **Nộp bài**.
 
-Dùng để **thêm học sinh mới, sửa thông tin, cấp quyền xem khoá học**.
+### Đăng xuất
 
-#### ➕ Thêm học sinh mới:
-1. Bấm nút **`+ Thêm học sinh`** (góc trên bên phải)
-2. Một dòng trống mới xuất hiện ở cuối bảng
-3. Điền vào các ô:
-   - **Tên**: Họ tên đầy đủ của học sinh
-   - **Email**: Email học sinh dùng để đăng nhập (ví dụ: `nguyenvana@gmail.com`)
-   - **Mật khẩu**: Mật khẩu thầy đặt cho học sinh (ví dụ: `hocsinh123`)
-   - **Quyền**: Chọn `Học sinh` (mặc định)
-4. Trong cột **"Khoá học được xem"**: **Tick vào ô vuông** của từng khoá học muốn cho học sinh đó xem
-5. Bấm nút **`Lưu thay đổi`** để lưu lại
-
-#### ✏️ Sửa thông tin học sinh:
-- Bấm trực tiếp vào ô cần sửa, gõ thông tin mới
-- Bấm **`Lưu thay đổi`** sau khi sửa xong
-
-#### 🗑️ Xóa học sinh:
-- Bấm chữ **`Xóa`** (màu đỏ) ở cuối dòng học sinh đó
-- Xác nhận → học sinh bị xóa khỏi hệ thống
-
-> ⚠️ **Quan trọng**: Sau khi thêm/sửa học sinh, luôn bấm **`Lưu thay đổi`** — nếu không dữ liệu sẽ mất khi tải lại trang!
+Bấm vào khu vực tài khoản ở góc dưới menu bên trái. Không lưu mật khẩu trên máy tính công cộng.
 
 ---
 
-### BƯỚC 3 — Quản lý Khoá Học
+## 2. Hướng dẫn dành cho thầy — công việc hằng ngày
 
-Dùng để **thêm khoá học mới, thêm bài học, thêm video/tài liệu**.
+### Mở trang quản trị
 
-#### ➕ Tạo khoá học mới:
-1. Bấm nút **`+ Tạo Khóa học mới`** (góc trên bên phải)
-2. Một hộp thoại hiện lên, gõ **tên khoá học** vào (ví dụ: `Lớp 12 THPT Quốc Gia 9+`)
-3. Bấm **OK** → Khoá học mới xuất hiện trong danh sách
+1. Mở: https://canar1406.github.io/thaytrieu/#/admin
+2. Nhập email và mật khẩu Admin.
+3. Bấm **Đăng nhập**.
 
-#### ✏️ Chỉnh sửa nội dung khoá học:
-1. Bấm nút **`Chỉnh sửa nội dung`** của khoá học muốn sửa
-2. Giao diện chi tiết hiện ra với:
-   - **Danh sách chương học** bên trái
-   - **Nội dung bài học** bên phải
-3. Bấm **`+ Thêm chương`** để tạo chương mới (ví dụ: `Chương 1: Hàm số`)
-4. Chọn một chương → Bấm **`+ Thêm bài học`** trong chương đó
-5. Điền thông tin bài học:
-   - **Tên bài**: Tên bài học
-   - **Loại**: Chọn `video` hoặc `document` (tài liệu PDF)
-   - **Đường dẫn (URL)**: Dán link YouTube hoặc Google Drive vào đây
-6. Bấm **`Lưu khoá học`** để lưu toàn bộ thay đổi
+Không cần mở `start-admin.bat`, không cần chạy máy chủ và không cần bấm Git Push. Mọi thay đổi trong trang quản trị được lưu trực tiếp vào Supabase.
 
-#### 💡 Cách lấy link YouTube:
-- Vào video YouTube → Bấm **`Chia sẻ`** → **`Sao chép liên kết`** → Dán vào ô URL
+### Thêm học viên mới
 
-#### 💡 Cách lấy link Google Drive:
-- Vào Google Drive → Chuột phải vào file → **`Lấy đường liên kết`** → **`Bất kỳ ai có đường liên kết`** → **`Sao chép liên kết`** → Dán vào ô URL
+1. Vào tab **Quản lý học sinh**.
+2. Bấm **+ Thêm học sinh**.
+3. Nhập:
+   - Họ và tên.
+   - Email đăng nhập.
+   - Mật khẩu ban đầu, tối thiểu 8 ký tự.
+   - Quyền: chọn **Học sinh**.
+4. Tick những khóa học sinh được phép xem.
+5. Bấm **Lưu thay đổi**.
+6. Gửi email và mật khẩu cho học viên qua tin nhắn riêng.
 
-#### 🗑️ Xóa khoá học:
-- Bấm **`Xóa`** (màu đỏ) → Xác nhận → Khoá học bị xóa vĩnh viễn
+Không dùng một mật khẩu chung cho tất cả học viên.
 
----
+### Cấp hoặc thu hồi khóa học
 
-### BƯỚC 4 — Quản lý Đề Thi
+1. Vào **Quản lý học sinh**.
+2. Tìm đúng học viên.
+3. Trong cột **Khóa học được xem**:
+   - Tick để cấp quyền.
+   - Bỏ tick để thu hồi quyền.
+4. Bấm **Lưu thay đổi**.
 
-Dùng để **thêm đề thi luyện tập mới vào hệ thống**.
+Quyền mới có hiệu lực ngay. Học viên có thể cần tải lại trang hoặc đăng nhập lại.
 
-1. Bấm vào tab **`Quản lý Đề thi`** ở menu bên trái
-2. Bấm **`+ Thêm đề thi`**
-3. Gõ tên đề thi (ví dụ: `Đề thử THPT Quốc Gia 2025 - Đề số 1`)
-4. Điền đường dẫn file đề thi (hỏi lập trình viên nếu cần hỗ trợ thêm file)
-5. Bấm **`Lưu`**
+### Đổi mật khẩu học viên
 
----
+1. Tìm học viên trong **Quản lý học sinh**.
+2. Nhập mật khẩu mới vào ô mật khẩu.
+3. Bấm **Lưu thay đổi**.
 
-### BƯỚC 5 — Đồng Bộ Lên Web (Quan Trọng Nhất!)
+Nếu không muốn đổi mật khẩu, để trống ô này.
 
-> 🌐 Sau khi thêm/sửa bất cứ thứ gì, **phải đồng bộ lên Web** thì học sinh mới thấy được thay đổi!
+### Xóa học viên
 
-1. Bấm vào mục **`☁️ Đồng bộ lên Web`** ở góc dưới menu bên trái
-2. Bấm nút lớn **`Đồng bộ lên Web`**
-3. Xác nhận → Hệ thống tự động đẩy toàn bộ lên internet
-4. **Đợi 1–2 phút** → Trang web chính thức đã cập nhật!
+1. Tìm đúng học viên.
+2. Bấm **Xóa**.
+3. Kiểm tra lại tên và email.
+4. Xác nhận rồi bấm **Lưu thay đổi**.
 
-> ✅ Thầy sẽ thấy thông báo "Đã đồng bộ lên Web thành công!" khi hoàn tất
+Xóa tài khoản sẽ xóa cả quyền khóa học của tài khoản đó. Không thể đăng nhập lại bằng tài khoản đã xóa.
 
----
+### Tạo khóa học
 
-## ❗ Các Lỗi Thường Gặp & Cách Xử Lý
+1. Vào tab **Quản lý khóa học**.
+2. Bấm **+ Tạo khóa học mới**.
+3. Nhập tên khóa học.
+4. Bấm **Chỉnh sửa nội dung**.
+5. Điền mô tả, chương và bài học.
+6. Bấm **Lưu nội dung**.
 
-### ❌ Lỗi 1: "Không thể kết nối đến Local Server"
-**Nguyên nhân**: Chưa chạy `start-admin.bat` hoặc cửa sổ đen bị đóng.
+### Thêm bài học
 
-**Cách sửa**:
-1. Tìm file `start-admin.bat` trong thư mục `triều`
-2. Bấm đúp chuột để chạy lại
-3. **KHÔNG đóng cửa sổ đen** → Tải lại trang Admin (F5)
+Mỗi bài học cần có:
 
----
+- Loại nội dung: Video hoặc PDF.
+- Tên bài học.
+- Đường dẫn nội dung.
 
-### ❌ Lỗi 2: Bấm "Lưu thay đổi" nhưng không thấy cập nhật
-**Nguyên nhân**: Đã lưu vào máy tính nhưng chưa đồng bộ lên web.
+Với YouTube, dùng link video đầy đủ. Với tài liệu cần bảo mật, không nên đặt Google Drive ở chế độ “Bất kỳ ai có liên kết”; nên sử dụng kho lưu trữ riêng tư.
 
-**Cách sửa**:
-1. Vào mục **`☁️ Đồng bộ lên Web`**
-2. Bấm đồng bộ → Đợi 1–2 phút → Kiểm tra lại trang web
+### Xóa khóa học
 
----
+1. Vào **Quản lý khóa học**.
+2. Kiểm tra chắc chắn đúng khóa.
+3. Bấm **Xóa** và xác nhận.
 
-### ❌ Lỗi 3: Học sinh nói "Không thấy khoá học"
-**Nguyên nhân**: Chưa cấp quyền xem khoá học cho học sinh đó.
+Hành động này xóa nội dung khóa và toàn bộ quyền liên quan. Nên sao lưu trước khi xóa khóa quan trọng.
 
-**Cách sửa**:
-1. Vào **Quản lý Học sinh**
-2. Tìm dòng của học sinh đó
-3. Ở cột **"Khoá học được xem"**: Tick vào khoá học muốn cấp
-4. Bấm **`Lưu thay đổi`** → **Đồng bộ lên Web**
+### Quản lý đề thi
 
----
-
-### ❌ Lỗi 4: Học sinh không đăng nhập được
-**Nguyên nhân**: Email hoặc mật khẩu nhập sai, hoặc chưa lưu sau khi thêm.
-
-**Cách sửa**:
-1. Vào **Quản lý Học sinh** → Kiểm tra lại Email và Mật khẩu của học sinh đó
-2. Đảm bảo đã bấm **`Lưu thay đổi`** sau khi thêm/sửa
-3. Đồng bộ lên Web nếu cần
+1. Vào tab **Quản lý đề thi**.
+2. Chọn đề để chỉnh sửa hoặc bấm tạo đề mới.
+3. Nhập tên và nội dung cần thiết.
+4. Bấm **Lưu đề thi**.
 
 ---
 
-### ❌ Lỗi 5: Form đăng ký trên trang chủ không gửi email
-**Nguyên nhân**: Thông tin EmailJS chưa được cấu hình đúng.
+## 3. Những điều tuyệt đối không làm
 
-**Cách sửa**: Liên hệ lập trình viên để kiểm tra `SERVICE_ID`, `TEMPLATE_ID`, `PUBLIC_KEY` trong file `src/pages/LandingPage.jsx`.
+- Không gửi `sb_secret_...` cho người khác.
+- Không đưa Secret Key vào file `.env.production`.
+- Không đăng ảnh có Secret Key lên mạng.
+- Không sửa trực tiếp bảng dữ liệu khi chưa hiểu rõ.
+- Không tắt Row Level Security (RLS).
+- Không biến dữ liệu khóa học thành file JSON trong thư mục `public`.
+- Không cấp quyền Admin cho học viên.
+- Không dùng cùng một mật khẩu cho nhiều người.
 
----
-
-### ❌ Lỗi 6: Trang web không cập nhật dù đã đồng bộ
-**Nguyên nhân**: Trình duyệt đang lưu cache cũ.
-
-**Cách sửa**: Bấm **`Ctrl + Shift + R`** (Windows) hoặc **`Cmd + Shift + R`** (Mac) để tải lại trang và xóa cache.
-
----
-
-### ❌ Lỗi 7: Video không phát được
-**Nguyên nhân**: Link YouTube không đúng định dạng hoặc link Google Drive chưa chia sẻ công khai.
-
-**Cách sửa**:
-- **YouTube**: Dùng link dạng `https://www.youtube.com/watch?v=...` (không dùng link rút gọn `youtu.be`)
-- **Google Drive**: Đảm bảo đã chọn quyền **"Bất kỳ ai có đường liên kết"** khi chia sẻ
+Publishable Key bắt đầu bằng `sb_publishable_` được dùng trong website và không có quyền bỏ qua RLS. Secret Key bắt đầu bằng `sb_secret_` có quyền rất lớn và phải được giữ riêng tư.
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt (Dành Cho Lập Trình Viên)
+## 4. Xử lý các lỗi thường gặp
 
-```bash
-# 1. Clone repository
-git clone https://github.com/canar1406/thaytrieu.git
-cd thaytrieu
+### Học viên đăng nhập không được
 
-# 2. Cài đặt thư viện
+Kiểm tra lần lượt:
+
+1. Email có đúng chính tả không.
+2. Có khoảng trắng thừa ở đầu hoặc cuối email không.
+3. Mật khẩu có đúng chữ hoa, chữ thường không.
+4. Tài khoản còn tồn tại trong trang quản trị không.
+5. Thử đặt lại mật khẩu cho học viên.
+
+### Học viên đăng nhập được nhưng không thấy khóa
+
+1. Mở trang Admin.
+2. Tìm học viên.
+3. Tick đúng khóa học.
+4. Bấm **Lưu thay đổi**.
+5. Yêu cầu học viên đăng xuất rồi đăng nhập lại.
+
+### Học viên nhập trực tiếp địa chỉ khóa khác
+
+Supabase sẽ kiểm tra quyền tại database. Nếu chưa được cấp, nội dung không được trả về. Việc sửa URL hoặc `localStorage` không cấp thêm quyền.
+
+### Trang trắng hoặc không tải được dữ liệu
+
+1. Nhấn `Ctrl + Shift + R` để tải lại hoàn toàn.
+2. Kiểm tra kết nối Internet.
+3. Mở Supabase Dashboard và xem project có ở trạng thái Healthy không.
+4. Mở GitHub → repository `thaytrieu` → tab **Actions** và kiểm tra lần triển khai mới nhất có dấu tích xanh.
+
+### Trang Admin báo lỗi khi lưu học viên
+
+Kiểm tra:
+
+1. Edge Function `admin-users` đã được deploy chưa.
+2. Người đang đăng nhập có role `admin` không.
+3. Email học viên có bị trùng không.
+4. Mật khẩu tài khoản mới có tối thiểu 8 ký tự không.
+
+### Video hoặc PDF không mở được
+
+- Kiểm tra đường dẫn có còn hoạt động không.
+- Kiểm tra quyền chia sẻ của file.
+- YouTube có cho phép nhúng video không.
+- File đã bị chủ sở hữu xóa hoặc di chuyển chưa.
+
+---
+
+## 5. Sao lưu và bảo mật
+
+### Sao lưu
+
+Gói Supabase miễn phí không có đầy đủ cơ chế backup tự động như gói trả phí. Nên xuất dữ liệu định kỳ và lưu ở vị trí riêng tư.
+
+Nên sao lưu trước khi:
+
+- Xóa nhiều học viên.
+- Xóa khóa học.
+- Chạy lại migration SQL.
+- Thay đổi RLS.
+
+### Khi lộ Secret Key
+
+1. Vào Supabase Dashboard.
+2. Mở **Project Settings → API Keys**.
+3. Rotate hoặc tạo Secret Key mới.
+4. Cập nhật `SUPABASE_SERVICE_ROLE_KEY` trong `.env` trên máy.
+5. Không cập nhật Secret Key vào GitHub Pages vì website không cần key này.
+
+### Đổi mật khẩu Admin
+
+Nên dùng mật khẩu dài, riêng biệt và bật MFA cho tài khoản quản lý Supabase. Không chia sẻ tài khoản Supabase Owner cho học viên hoặc cộng tác viên không cần thiết.
+
+---
+
+## 6. Cài đặt trên máy mới
+
+Phần này chỉ cần thực hiện khi đổi máy hoặc cài lại dự án.
+
+1. Cài Node.js từ https://nodejs.org/
+2. Tải dự án từ GitHub.
+3. Mở thư mục dự án.
+4. Copy `.env.example` thành `.env`.
+5. Điền Project URL, Publishable Key và Secret Key.
+6. Mở terminal trong thư mục và chạy:
+
+```powershell
 npm install
-
-# 3. Chạy Admin Backend Server
-node admin-server.js
-# Hoặc bấm đúp vào start-admin.bat (Windows)
-
-# 4. Chạy Development Server
 npm run dev
 ```
 
-Sau đó truy cập:
-- **Trang chủ**: `http://localhost:5173/`
-- **Trang Admin**: `http://localhost:5173/admin`
-- **Dashboard học sinh**: `http://localhost:5173/dashboard`
+7. Mở http://localhost:5173/
+
+Không cần chạy import lần nữa nếu dữ liệu đã có trên Supabase.
 
 ---
 
-## 🔧 Cấu Trúc Dữ Liệu
+## 7. Cập nhật giao diện lên GitHub Pages
 
-| File | Mô tả |
-|------|-------|
-| `public/data/users.json` | Danh sách học sinh & quyền truy cập |
-| `public/data/courses/course-list.json` | Danh sách khoá học |
-| `public/data/courses/course-{id}.json` | Nội dung chi tiết từng khoá học |
-| `public/data/exams.json` | Danh sách đề thi |
+Chỉ cần phần này khi mã nguồn giao diện được chỉnh sửa.
 
----
+1. Commit thay đổi.
+2. Push lên nhánh `main` của GitHub.
+3. GitHub Actions tự động build và deploy.
+4. Chờ khoảng 1–3 phút.
+5. Kiểm tra tab **Actions** có dấu tích xanh.
+6. Mở website và nhấn `Ctrl + Shift + R`.
 
-## 📚 Công Nghệ Sử Dụng
-
-| Loại | Công nghệ |
-|------|-----------|
-| Frontend | React 18 + Vite |
-| Animations | GSAP + ScrollTrigger |
-| Charts | Chart.js + react-chartjs-2 |
-| Math Rendering | KaTeX + remark-math |
-| Email | EmailJS |
-| Routing | react-router-dom |
-| Admin Backend | Node.js + Express |
-| Styling | Vanilla CSS (Glassmorphism) |
-| Hosting | GitHub Pages |
+Thay đổi học viên, quyền, khóa học và đề thi trong trang Admin được lưu trực tiếp vào Supabase nên không cần Git push.
 
 ---
 
-*Dự án được xây dựng với mục tiêu mang lại trải nghiệm giáo dục tốt nhất cho học sinh chuẩn bị cho kỳ thi THPT Quốc Gia.*
+## 8. Thông tin kỹ thuật dành cho người hỗ trợ
 
----
+- Frontend: React + Vite.
+- Routing: HashRouter, phù hợp GitHub Pages.
+- Authentication: Supabase Auth.
+- Database: Supabase PostgreSQL.
+- Authorization: PostgreSQL Row Level Security.
+- Admin user management: Supabase Edge Function `admin-users`.
+- Migration: `supabase/migrations/001_initial_schema.sql`.
+- Hướng dẫn thiết lập kỹ thuật: [SUPABASE_SETUP.md](./SUPABASE_SETUP.md).
 
-> **Cập nhật kiến trúc bảo mật:** Dự án hiện dùng GitHub Pages + Supabase Auth/PostgreSQL RLS. Các hướng dẫn cũ liên quan đến `public/data`, mật khẩu JSON, local Node API và nút Git push không còn được sử dụng. Xem [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) để cấu hình và triển khai.
+Các biến công khai dùng khi build:
+
+```env
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+Biến tuyệt đối không được đưa vào frontend hoặc Git:
+
+```env
+SUPABASE_SERVICE_ROLE_KEY=...
+```
