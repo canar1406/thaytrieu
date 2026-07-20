@@ -129,6 +129,24 @@ const AdminDashboard = () => {
     setExams(exams.filter(e => e.id !== id));
   };
 
+  const handleExamFile = async (file) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return alert('File đề thi phải nhỏ hơn 2 MB.');
+    try {
+      const text = await file.text();
+      if (file.name.toLowerCase().endsWith('.json')) {
+        const parsed = JSON.parse(text);
+        setCurrentExam(current => ({ ...current, data: parsed.data || parsed, markdownContent: '', fileName: file.name, fileUrl: '' }));
+      } else if (file.name.toLowerCase().endsWith('.md')) {
+        setCurrentExam(current => ({ ...current, markdownContent: text, data: undefined, fileName: file.name, fileUrl: '' }));
+      } else {
+        alert('Chỉ hỗ trợ file .json hoặc .md.');
+      }
+    } catch {
+      alert('Không đọc được file. Nếu là JSON, hãy kiểm tra lại định dạng file.');
+    }
+  };
+
   const handleDeleteUser = (id) => {
     if (confirm('Xóa học sinh này?')) {
       setUsers(users.filter(u => u.id !== id));
@@ -450,7 +468,7 @@ const AdminDashboard = () => {
                 {exams.map(exam => (
                   <div key={exam.id} style={{ padding: '24px', border: '1px solid var(--gray-200)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <h3 style={{ margin: 0 }}>{exam.title}</h3>
-                    <p style={{ margin: 0, color: 'var(--gray-500)', wordBreak: 'break-all' }}>Đường dẫn file: {exam.fileUrl || (exam.data ? 'JSON Format (Cũ)' : 'Chưa có')}</p>
+                    <p style={{ margin: 0, color: 'var(--gray-500)', wordBreak: 'break-all' }}>Nội dung: {exam.fileName || (exam.data ? 'Đề JSON đã lưu' : exam.markdownContent ? 'Đề Markdown đã lưu' : 'Chưa có')}</p>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setCurrentExam(exam)}>Chỉnh sửa</button>
                       <button className="btn-secondary" style={{ color: 'red', padding: '8px' }} onClick={() => handleDeleteExam(exam.id)}>Xóa</button>
@@ -479,10 +497,9 @@ const AdminDashboard = () => {
               </div>
 
               <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '12px', marginBottom: '24px', fontSize: '14px' }}>
-                <strong>💡 Hướng dẫn lưu file Đề thi</strong>
+                <strong>💡 Tải file đề thi trực tiếp</strong>
                 <p style={{ margin: '8px 0 0 0' }}>
-                  Thầy có thể soạn đề thi bằng Markdown (.md) hoặc JSON. Hãy tạo file đề thi và lưu vào thư mục <code>public/data/exams/</code>. <br/>
-                  Sau đó, nhập đường dẫn vào ô bên dưới (ví dụ: <code>./data/exams/de-thi-1.md</code> hoặc <code>./data/exams/de-kiem-tra-toan.json</code>).
+                  Chọn file <strong>.json</strong> để có đề tương tác và chấm điểm, hoặc <strong>.md</strong> để hiển thị đề dạng văn bản. File được đọc và lưu thẳng vào Supabase, không cần đưa vào GitHub hay Supabase Storage. Giới hạn mỗi file là 2 MB.
                 </p>
               </div>
 
@@ -492,8 +509,11 @@ const AdminDashboard = () => {
                   <input value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Tên đề thi" />
                 </div>
                 <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Đường dẫn file (Markdown hoặc JSON):</label>
-                  <input value={currentExam.fileUrl || ''} onChange={e => setCurrentExam({...currentExam, fileUrl: e.target.value})} className="input-field" placeholder="Ví dụ: ./data/exams/de-thi-1.md" />
+                  <label htmlFor="exam-file" style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Chọn file đề thi:</label>
+                  <input id="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => handleExamFile(e.target.files?.[0])} className="input-field" />
+                  <small style={{ display: 'block', marginTop: 8, color: 'var(--gray-600)' }}>
+                    {currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}
+                  </small>
                 </div>
               </div>
             </div>

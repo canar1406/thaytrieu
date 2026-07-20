@@ -131,8 +131,14 @@ Hành động này xóa nội dung khóa và toàn bộ quyền liên quan. Nên
 
 1. Vào tab **Quản lý đề thi**.
 2. Chọn đề để chỉnh sửa hoặc bấm tạo đề mới.
-3. Nhập tên và nội dung cần thiết.
-4. Bấm **Lưu đề thi**.
+3. Nhập tên đề.
+4. Bấm **Chọn file đề thi** và chọn file `.json` hoặc `.md` trên máy:
+   - `.json`: đề tương tác, có chấm điểm tự động.
+   - `.md`: đề văn bản, phù hợp để đọc hoặc in.
+5. Kiểm tra tên file hiện dưới nút chọn file.
+6. Bấm **Lưu đề thi**.
+
+File được đọc và lưu trực tiếp vào database Supabase; không cần copy vào `public`, không cần upload Supabase Storage và không cần Git push. Mỗi file tối đa 2 MB. Với đề JSON, đáp án được giữ lại phía database và không gửi cho học viên trước khi nộp bài.
 
 ---
 

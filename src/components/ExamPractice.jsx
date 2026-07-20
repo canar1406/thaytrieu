@@ -72,7 +72,10 @@ export default function ExamPractice({ onBackToDashboard }) {
     setTimeLeft(90 * 60);
     setMarkdownContent('');
 
-    if (exam.fileUrl) {
+    if (exam.markdownContent) {
+      setMarkdownContent(exam.markdownContent);
+      setView('exam');
+    } else if (exam.fileUrl) {
       try {
         const url = exam.fileUrl.startsWith('/') ? '.' + exam.fileUrl : exam.fileUrl;
         const res = await fetch(url);
