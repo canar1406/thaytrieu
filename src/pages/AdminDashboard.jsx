@@ -9,6 +9,10 @@ const AdminDashboard = () => {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [activeTab, setActiveTab] = useState('users'); // users, courses, publish
   const [errorMsg, setErrorMsg] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [isSavingUsers, setIsSavingUsers] = useState(false);
+  const [notice, setNotice] = useState('');
 
   // Data states
   const [users, setUsers] = useState([]);
@@ -24,6 +28,12 @@ const AdminDashboard = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (users.length > 0 && !users.some(user => user.id === selectedUserId)) {
+      setSelectedUserId(users[0].id);
+    }
+  }, [users, selectedUserId]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -73,6 +83,8 @@ const AdminDashboard = () => {
   };
 
   const handleSaveUsers = async () => {
+    setIsSavingUsers(true);
+    setNotice('');
     try {
       const response = await apiFetch(`/users`, {
         method: 'POST',
@@ -82,13 +94,18 @@ const AdminDashboard = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Không thể lưu học viên');
       await loadUsers();
-      alert('Đã lưu danh sách học sinh!');
-    } catch (e) { alert(`Lỗi khi lưu: ${e.message}`); }
+      setNotice('Đã lưu thay đổi học viên thành công.');
+    } catch (e) {
+      setNotice(`Không thể lưu: ${e.message}`);
+    } finally {
+      setIsSavingUsers(false);
+    }
   };
 
   const handleAddUser = () => {
     const newId = `new-${crypto.randomUUID()}`;
     setUsers([...users, { id: newId, email: '', password: '', name: '', role: 'student', allowedCourses: [] }]);
+    setSelectedUserId(newId);
   };
 
   const handleSaveExams = async (updatedExams) => {
@@ -205,281 +222,139 @@ const AdminDashboard = () => {
     }
   };
 
+  const filteredUsers = users.filter(user => `${user.name} ${user.email}`.toLowerCase().includes(userSearch.trim().toLowerCase()));
+  const selectedUser = users.find(user => user.id === selectedUserId);
+  const tabInfo = {
+    users: ['Học viên', 'Quản lý tài khoản và phân quyền khóa học'],
+    courses: ['Khóa học', 'Tổ chức chương và nội dung bài giảng'],
+    exams: ['Đề thi', 'Quản lý ngân hàng đề và nội dung kiểm tra']
+  }[activeTab];
+
   if (!isAdmin) {
     return (
-      <div className="couyen-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--gray-50)' }}>
-        <div style={{ padding: '40px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)', width: '100%', maxWidth: '400px' }}>
-          <h2 style={{ textAlign: 'center', color: 'var(--primary-600)', marginBottom: '24px' }}>Admin Login</h2>
-          {errorMsg && <div style={{ color: 'red', marginBottom: '16px', fontSize: '14px', textAlign: 'center' }}>{errorMsg}</div>}
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <input type="email" placeholder="Email Admin" className="input-field" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} required />
-            <input type="password" placeholder="Mật khẩu" className="input-field" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required />
-            <button type="submit" className="btn-primary">Đăng Nhập</button>
+      <main className="admin-login-page">
+        <section className="admin-login-card" aria-labelledby="admin-login-title">
+          <div className="admin-login-mark" aria-hidden="true">T</div>
+          <p className="admin-eyebrow">TRUNG TÂM QUẢN TRỊ</p>
+          <h1 id="admin-login-title">Đăng nhập quản trị</h1>
+          <p className="admin-login-copy">Sử dụng tài khoản Admin đã tạo trên hệ thống.</p>
+          {errorMsg && <p className="admin-form-error" role="alert">{errorMsg}</p>}
+          <form onSubmit={handleLogin} className="admin-login-form">
+            <label htmlFor="admin-email">Email</label>
+            <input id="admin-email" name="email" type="email" autoComplete="username" spellCheck={false} placeholder="admin@example.com…" className="input-field" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} required />
+            <label htmlFor="admin-password">Mật khẩu</label>
+            <input id="admin-password" name="password" type="password" autoComplete="current-password" placeholder="Nhập mật khẩu…" className="input-field" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required />
+            <button type="submit" className="btn-primary">Đăng nhập</button>
           </form>
-        </div>
-      </div>
+        </section>
+      </main>
     );
   }
 
-  return (
-    <div className="couyen-app admin-app">
-      <div className="app-layout">
-        <aside className="sidebar admin-sidebar">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-icon">T</div>
-            <div className="sidebar-logo-text">
-              <span className="brand-name">Admin Tool</span>
-              <span className="brand-sub">Quản trị nội dung</span>
-            </div>
-          </div>
-          <div className="sidebar-nav">
-            <button className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => {setActiveTab('users'); setCurrentCourse(null);}}>👥 <span>Học sinh</span></button>
-            <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => {setActiveTab('courses'); setCurrentCourse(null); setCurrentExam(null);}}>📚 <span>Khóa học</span></button>
-            <button className={`nav-item ${activeTab === 'exams' ? 'active' : ''}`} onClick={() => {setActiveTab('exams'); setCurrentCourse(null); setCurrentExam(null);}}>📝 <span>Đề thi</span></button>
-            <button className="nav-item" style={{ marginTop: 'auto', background: 'none' }} onClick={async () => { await apiFetch('/logout', { method: 'POST' }); setIsAdmin(false); }}>Đăng xuất</button>
-          </div>
-        </aside>
+  const switchTab = tab => {
+    setActiveTab(tab);
+    setCurrentCourse(null);
+    setCurrentExam(null);
+    setNotice('');
+  };
 
-        <main className="main-content admin-main">
-          <header className="admin-page-banner">
-            <div><span className="admin-eyebrow">TRUNG TÂM QUẢN TRỊ</span><h1>Xin chào, thầy Triều 👋</h1><p>Mọi thay đổi được lưu trực tiếp và bảo mật trên Supabase.</p></div>
-            <div className="admin-stats"><span><strong>{users.length}</strong> học viên</span><span><strong>{courses.length}</strong> khóa học</span><span><strong>{exams.length}</strong> đề thi</span></div>
+  return (
+    <div className="admin-app">
+      <a className="admin-skip-link" href="#admin-main">Bỏ qua điều hướng</a>
+      <aside className="admin-sidebar" aria-label="Điều hướng quản trị">
+        <div className="admin-brand">
+          <div className="admin-brand-mark" aria-hidden="true">T</div>
+          <div><strong>Thầy Triều</strong><span>Admin Center</span></div>
+        </div>
+        <nav className="admin-nav">
+          <p className="admin-nav-label">QUẢN LÝ</p>
+          <button className={activeTab === 'users' ? 'active' : ''} aria-current={activeTab === 'users' ? 'page' : undefined} onClick={() => switchTab('users')}><span aria-hidden="true">👥</span><span>Học viên</span><b>{users.length}</b></button>
+          <button className={activeTab === 'courses' ? 'active' : ''} aria-current={activeTab === 'courses' ? 'page' : undefined} onClick={() => switchTab('courses')}><span aria-hidden="true">📚</span><span>Khóa học</span><b>{courses.length}</b></button>
+          <button className={activeTab === 'exams' ? 'active' : ''} aria-current={activeTab === 'exams' ? 'page' : undefined} onClick={() => switchTab('exams')}><span aria-hidden="true">📝</span><span>Đề thi</span><b>{exams.length}</b></button>
+        </nav>
+        <div className="admin-sidebar-foot">
+          <div className="admin-system-status"><i aria-hidden="true" /><span><strong>Supabase</strong><small>Đã kết nối an toàn</small></span></div>
+          <button className="admin-logout" onClick={async () => { await apiFetch('/logout', { method: 'POST' }); setIsAdmin(false); }}><span aria-hidden="true">↪</span>Đăng xuất</button>
+        </div>
+      </aside>
+
+      <main id="admin-main" className="admin-main">
+        <div className="admin-content">
+          <header className="admin-topbar">
+            <div><p className="admin-eyebrow">TRUNG TÂM QUẢN TRỊ</p><h1>{tabInfo[0]}</h1><p>{tabInfo[1]}</p></div>
+            <div className="admin-topbar-profile"><span>PT</span><div><strong>Thầy Triều</strong><small>Quản trị viên</small></div></div>
           </header>
+
+          <section className="admin-overview" aria-label="Tổng quan hệ thống">
+            <article><span className="blue" aria-hidden="true">👥</span><div><strong>{users.length}</strong><small>Học viên</small></div></article>
+            <article><span className="violet" aria-hidden="true">📚</span><div><strong>{courses.length}</strong><small>Khóa học</small></div></article>
+            <article><span className="amber" aria-hidden="true">📝</span><div><strong>{exams.length}</strong><small>Đề thi</small></div></article>
+            <article className="admin-overview-wide"><span className="green" aria-hidden="true">✓</span><div><strong>Dữ liệu trực tuyến</strong><small>Đăng nhập và phân quyền qua Supabase</small></div></article>
+          </section>
+
           {activeTab === 'users' && (
-            <div className="admin-panel">
+            <section className="admin-panel" aria-labelledby="users-heading">
               <div className="admin-panel-header">
-                <div><h2>Quản lý học sinh</h2><p>Thêm tài khoản và chọn chính xác khóa học mỗi em được xem.</p></div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button className="btn-secondary" onClick={handleAddUser}>+ Thêm học sinh</button>
-                  <button className="btn-primary" onClick={handleSaveUsers}>Lưu thay đổi</button>
-                </div>
+                <div><h2 id="users-heading">Danh sách học viên</h2><p>Chọn một học viên để chỉnh thông tin và khóa học được phép xem.</p></div>
+                <div className="admin-actions"><button className="btn-secondary" onClick={handleAddUser}>+ Thêm học viên</button><button className="btn-primary" disabled={isSavingUsers} onClick={handleSaveUsers}>{isSavingUsers ? 'Đang lưu…' : 'Lưu thay đổi'}</button></div>
               </div>
-              
-              <div className="admin-user-list">
-                {users.map((u, index) => (
-                  <article className="admin-user-card" key={u.id}>
-                    <div className="admin-user-card-head">
-                      <div className="admin-user-identity"><span className="admin-user-avatar">{(u.name || '?').charAt(0).toUpperCase()}</span><div><strong>{u.name || 'Học viên mới'}</strong><small>{u.role === 'admin' ? 'Quản trị viên' : `Học viên #${index + 1}`}</small></div></div>
-                      <button className="admin-delete-btn" onClick={() => handleDeleteUser(u.id)}>Xóa tài khoản</button>
-                    </div>
-                    <div className="admin-user-fields">
-                      <label><span>Họ và tên</span><input value={u.name} onChange={e => handleChangeUser(u.id, 'name', e.target.value)} className="input-field" /></label>
-                      <label><span>Email đăng nhập</span><input type="email" value={u.email} onChange={e => handleChangeUser(u.id, 'email', e.target.value)} className="input-field" /></label>
-                      <label><span>Mật khẩu mới</span><input type="password" value={u.password || ''} placeholder="Để trống nếu không đổi" onChange={e => handleChangeUser(u.id, 'password', e.target.value)} className="input-field" /></label>
-                      <label><span>Loại tài khoản</span><select value={u.role} onChange={e => handleChangeUser(u.id, 'role', e.target.value)} className="input-field"><option value="student">Học sinh</option><option value="admin">Admin</option></select></label>
-                    </div>
-                    <div className="admin-course-access">
-                      <div className="admin-course-access-title"><strong>Khóa học được phép xem</strong><span>{u.role === 'admin' ? 'Admin được xem toàn bộ' : `${(u.allowedCourses || []).length}/${courses.length} khóa đã chọn`}</span></div>
-                      {u.role !== 'admin' && <div className="admin-course-checks">{courses.map(c => (
-                        <label key={c.id} className={(u.allowedCourses || []).includes(c.id) ? 'checked' : ''}><input type="checkbox" checked={(u.allowedCourses || []).includes(c.id)} onChange={e => { const allowed = u.allowedCourses || []; handleChangeUser(u.id, 'allowedCourses', e.target.checked ? [...allowed, c.id] : allowed.filter(id => id !== c.id)); }} /><span>{c.title}</span></label>
-                      ))}</div>}
-                    </div>
-                  </article>
-                ))}
+              {notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}
+              <div className="admin-users-workspace">
+                <section className="admin-user-directory" aria-label="Danh sách tài khoản">
+                  <label className="admin-search"><span aria-hidden="true">⌕</span><span className="sr-only">Tìm học viên</span><input name="user-search" type="search" autoComplete="off" placeholder="Tìm tên hoặc email…" value={userSearch} onChange={e => setUserSearch(e.target.value)} /></label>
+                  <div className="admin-user-directory-list">
+                    {filteredUsers.map(user => <button key={user.id} className={selectedUserId === user.id ? 'active' : ''} onClick={() => setSelectedUserId(user.id)}><span className="admin-user-avatar" aria-hidden="true">{(user.name || '?').charAt(0).toUpperCase()}</span><span><strong>{user.name || 'Học viên mới'}</strong><small>{user.email || 'Chưa có email'}</small></span><em>{user.role === 'admin' ? 'Admin' : `${(user.allowedCourses || []).length} khóa`}</em></button>)}
+                    {filteredUsers.length === 0 && <div className="admin-empty-small">Không tìm thấy học viên phù hợp.</div>}
+                  </div>
+                </section>
+
+                {selectedUser ? <section className="admin-user-editor" aria-labelledby="user-editor-heading">
+                  <div className="admin-user-editor-head"><div><p className="admin-eyebrow">HỒ SƠ TÀI KHOẢN</p><h3 id="user-editor-heading">{selectedUser.name || 'Học viên mới'}</h3></div><button className="admin-delete-btn" onClick={() => handleDeleteUser(selectedUser.id)}>Xóa tài khoản</button></div>
+                  <div className="admin-form-grid">
+                    <label><span>Họ và tên</span><input name="student-name" autoComplete="off" value={selectedUser.name} onChange={e => handleChangeUser(selectedUser.id, 'name', e.target.value)} className="input-field" placeholder="Nhập họ và tên…" /></label>
+                    <label><span>Email đăng nhập</span><input name="student-email" type="email" autoComplete="off" spellCheck={false} value={selectedUser.email} onChange={e => handleChangeUser(selectedUser.id, 'email', e.target.value)} className="input-field" placeholder="hocvien@example.com…" /></label>
+                    <label><span>Mật khẩu mới</span><input name="student-new-password" type="password" autoComplete="new-password" value={selectedUser.password || ''} placeholder="Để trống nếu không đổi…" onChange={e => handleChangeUser(selectedUser.id, 'password', e.target.value)} className="input-field" /></label>
+                    <label><span>Loại tài khoản</span><select name="student-role" value={selectedUser.role} onChange={e => handleChangeUser(selectedUser.id, 'role', e.target.value)} className="input-field"><option value="student">Học sinh</option><option value="admin">Quản trị viên</option></select></label>
+                  </div>
+                  <div className="admin-course-access">
+                    <div className="admin-course-access-title"><div><strong>Quyền truy cập khóa học</strong><p>Chỉ những khóa được chọn mới xuất hiện trong tài khoản học viên.</p></div><span>{selectedUser.role === 'admin' ? 'Toàn quyền' : `${(selectedUser.allowedCourses || []).length}/${courses.length} khóa`}</span></div>
+                    {selectedUser.role === 'admin' ? <div className="admin-admin-access"><span aria-hidden="true">✓</span><div><strong>Quản trị viên được xem toàn bộ khóa học</strong><p>Không cần chọn thủ công từng khóa bên dưới.</p></div></div> : <div className="admin-course-checks">{courses.map(course => {
+                      const checked = (selectedUser.allowedCourses || []).includes(course.id);
+                      return <label key={course.id} className={checked ? 'checked' : ''}><input name={`course-access-${course.id}`} type="checkbox" checked={checked} onChange={e => { const allowed = selectedUser.allowedCourses || []; handleChangeUser(selectedUser.id, 'allowedCourses', e.target.checked ? [...allowed, course.id] : allowed.filter(id => id !== course.id)); }} /><span><strong>{course.title}</strong><small>{course.totalLessons || 0} bài học</small></span></label>;
+                    })}</div>}
+                  </div>
+                </section> : <div className="admin-empty">Chọn một học viên để bắt đầu chỉnh sửa.</div>}
               </div>
-            </div>
+            </section>
           )}
 
           {activeTab === 'courses' && !currentCourse && (
-            <div className="admin-panel">
-              <div className="admin-panel-header">
-                <div><h2>Quản lý khóa học</h2><p>Tạo khóa, sắp xếp chương và cập nhật nội dung bài giảng.</p></div>
-                <button className="btn-primary" onClick={handleAddCourse}>+ Tạo Khóa học mới</button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-                {courses.map(course => (
-                  <div key={course.id} style={{ padding: '24px', border: '1px solid var(--gray-200)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <h3 style={{ margin: 0 }}>{course.title}</h3>
-                    <p style={{ margin: 0, color: 'var(--gray-500)' }}>ID: {course.id} | Số bài: {course.totalLessons}</p>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-secondary" style={{ flex: 1 }} onClick={() => {
-                         apiFetch(`/courses/${course.id}`)
-                           .then(res => res.json())
-                           .then(data => setCurrentCourse(data));
-                      }}>Chỉnh sửa nội dung</button>
-                      <button className="btn-secondary" style={{ color: 'red', padding: '8px' }} onClick={() => handleDeleteCourse(course.id)}>Xóa</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <section className="admin-panel" aria-labelledby="courses-heading">
+              <div className="admin-panel-header"><div><h2 id="courses-heading">Thư viện khóa học</h2><p>Tạo khóa mới và quản lý nội dung từng chương.</p></div><button className="btn-primary" onClick={handleAddCourse}>+ Tạo khóa học</button></div>
+              <div className="admin-card-grid">{courses.map((course, index) => <article className="admin-content-card" key={course.id}><div className={`admin-card-cover tone-${index % 4}`}><span aria-hidden="true">📖</span><b>{course.totalLessons || 0} bài</b></div><div className="admin-card-body"><p>KHÓA HỌC #{course.id}</p><h3>{course.title}</h3><div className="admin-card-actions"><button className="btn-secondary" onClick={() => { apiFetch(`/courses/${course.id}`).then(res => res.json()).then(data => setCurrentCourse(data)); }}>Chỉnh sửa nội dung</button><button className="admin-icon-delete" aria-label={`Xóa khóa học ${course.title}`} onClick={() => handleDeleteCourse(course.id)}>Xóa</button></div></div></article>)}</div>
+            </section>
           )}
 
           {activeTab === 'courses' && currentCourse && (
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <div>
-                  <button onClick={() => setCurrentCourse(null)} style={{ background: 'none', border: 'none', color: 'var(--primary-600)', cursor: 'pointer', marginBottom: '8px' }}>← Quay lại danh sách</button>
-                  <h2>Chỉnh sửa: {currentCourse.title}</h2>
-                </div>
-                <div>
-                  <button className="btn-primary" onClick={async () => {
-                    // Update currentCourse data
-                    await apiFetch(`/courses/${currentCourse.id}`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(currentCourse)
-                    });
-                    
-                    // Recalculate total lessons
-                    let totalLessons = 0;
-                    currentCourse.sections.forEach(sec => {
-                      totalLessons += sec.items.length;
-                    });
-
-                    // Update courses list
-                    const updatedCourses = courses.map(c => 
-                      c.id === currentCourse.id 
-                        ? { ...c, title: currentCourse.title, totalLessons } 
-                        : c
-                    );
-                    setCourses(updatedCourses);
-
-                    await apiFetch(`/courses`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(updatedCourses)
-                    });
-
-                    alert('Lưu bản nháp thành công!');
-                  }}>Lưu Nội Dung</button>
-                </div>
-              </div>
-
-              {/* Course Info Edit */}
-              <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <input value={currentCourse.title} onChange={e => setCurrentCourse({...currentCourse, title: e.target.value})} className="input-field" placeholder="Tên khóa học"/>
-                <textarea value={currentCourse.desc} onChange={e => setCurrentCourse({...currentCourse, desc: e.target.value})} className="input-field" placeholder="Mô tả" rows={3}/>
-              </div>
-
-              <div className="admin-guide">
-                <div className="admin-guide-title"><span>💡</span><div><strong>Cách thêm nội dung bài học</strong><p>Làm lần lượt theo 3 bước dưới đây.</p></div></div>
-                <div className="admin-guide-steps"><div><b>1</b><strong>Chọn loại</strong><span>Video hoặc PDF</span></div><div><b>2</b><strong>Nhập tên bài</strong><span>Tên ngắn, dễ hiểu</span></div><div><b>3</b><strong>Dán liên kết</strong><span>YouTube hoặc Google Drive</span></div></div>
-                <p className="admin-guide-note">🔒 Tài liệu cần bảo mật không nên đặt Google Drive ở chế độ công khai.</p>
-              </div>
-
-              {/* Sections Edit */}
-              <div>
-                {currentCourse.sections.map((sec, secIndex) => (
-                  <div key={sec.id} style={{ padding: '16px', border: '1px solid var(--gray-200)', borderRadius: '12px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                      <input value={sec.title} onChange={e => {
-                        const newSecs = [...currentCourse.sections];
-                        newSecs[secIndex].title = e.target.value;
-                        setCurrentCourse({...currentCourse, sections: newSecs});
-                      }} className="input-field" style={{ flex: 1, fontWeight: 'bold' }} placeholder="Tên Chương"/>
-                    </div>
-                    
-                    {/* Items */}
-                    <div style={{ marginLeft: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {sec.items.map((item, itemIndex) => (
-                        <div key={item.id} style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--gray-50)', padding: '12px', borderRadius: '8px' }}>
-                          <select value={item.type} onChange={e => {
-                            const newSecs = [...currentCourse.sections];
-                            newSecs[secIndex].items[itemIndex].type = e.target.value;
-                            setCurrentCourse({...currentCourse, sections: newSecs});
-                          }} className="input-field" style={{ width: '100px', padding: '8px' }}>
-                            <option value="video">Video</option>
-                            <option value="pdf">PDF</option>
-                          </select>
-                          <input value={item.title} onChange={e => {
-                            const newSecs = [...currentCourse.sections];
-                            newSecs[secIndex].items[itemIndex].title = e.target.value;
-                            setCurrentCourse({...currentCourse, sections: newSecs});
-                          }} className="input-field" style={{ flex: 1, padding: '8px' }} placeholder="Tên bài học"/>
-                          <input value={item.url} onChange={e => {
-                            const newSecs = [...currentCourse.sections];
-                            newSecs[secIndex].items[itemIndex].url = e.target.value;
-                            setCurrentCourse({...currentCourse, sections: newSecs});
-                          }} className="input-field" style={{ flex: 2, padding: '8px' }} placeholder="Link Nhúng (Embed URL)"/>
-                          <button onClick={() => {
-                            if(confirm('Xóa bài này?')) {
-                              const newSecs = [...currentCourse.sections];
-                              newSecs[secIndex].items.splice(itemIndex, 1);
-                              setCurrentCourse({...currentCourse, sections: newSecs});
-                            }
-                          }} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}>Xóa</button>
-                        </div>
-                      ))}
-                      <button className="btn-secondary" style={{ alignSelf: 'flex-start', padding: '6px 12px', fontSize: '14px' }} onClick={() => {
-                        const newSecs = [...currentCourse.sections];
-                        newSecs[secIndex].items.push({ id: `item-${Date.now()}`, title: 'Bài học mới', type: 'video', url: '' });
-                        setCurrentCourse({...currentCourse, sections: newSecs});
-                      }}>+ Thêm bài học</button>
-                    </div>
-                  </div>
-                ))}
-                <button className="btn-secondary" style={{ width: '100%' }} onClick={() => {
-                  setCurrentCourse({
-                    ...currentCourse,
-                    sections: [...currentCourse.sections, { id: `sec-${Date.now()}`, title: 'Chương mới', items: [] }]
-                  });
-                }}>+ Thêm Chương mới</button>
-              </div>
-            </div>
+            <section className="admin-panel admin-editor-panel" aria-labelledby="course-editor-heading">
+              <div className="admin-panel-header"><div><button className="admin-back" onClick={() => setCurrentCourse(null)}>← Danh sách khóa học</button><h2 id="course-editor-heading">{currentCourse.title}</h2><p>Chỉnh thông tin khóa học, chương và từng bài giảng.</p></div><button className="btn-primary" onClick={async () => { await apiFetch(`/courses/${currentCourse.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(currentCourse) }); const totalLessons = currentCourse.sections.reduce((total, section) => total + section.items.length, 0); const updatedCourses = courses.map(course => course.id === currentCourse.id ? {...course, title: currentCourse.title, totalLessons} : course); setCourses(updatedCourses); await apiFetch('/courses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedCourses) }); setNotice('Đã lưu nội dung khóa học.'); }}>Lưu nội dung</button></div>
+              {notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}
+              <div className="admin-form-card"><label><span>Tên khóa học</span><input name="course-title" autoComplete="off" value={currentCourse.title} onChange={e => setCurrentCourse({...currentCourse, title: e.target.value})} className="input-field" placeholder="Nhập tên khóa học…" /></label><label><span>Mô tả ngắn</span><textarea name="course-description" autoComplete="off" value={currentCourse.desc} onChange={e => setCurrentCourse({...currentCourse, desc: e.target.value})} className="input-field" placeholder="Mô tả nội dung khóa học…" rows={3} /></label></div>
+              <div className="admin-guide"><div className="admin-guide-title"><span aria-hidden="true">💡</span><div><strong>Thêm bài học đúng cách</strong><p>Mỗi bài cần có tên rõ ràng và liên kết nhúng hợp lệ.</p></div></div><ol className="admin-guide-steps"><li><b>1</b><span><strong>Chọn định dạng</strong><small>Video hoặc PDF</small></span></li><li><b>2</b><span><strong>Đặt tên bài học</strong><small>Ngắn gọn, dễ tìm</small></span></li><li><b>3</b><span><strong>Dán liên kết nhúng</strong><small>YouTube hoặc Google Drive</small></span></li></ol><p className="admin-guide-note">🔒 Không đặt tài liệu cần bảo mật ở chế độ công khai trên Google Drive.</p></div>
+              <div className="admin-sections">{currentCourse.sections.map((section, sectionIndex) => <article className="admin-section-card" key={section.id}><div className="admin-section-head"><span>Chương {sectionIndex + 1}</span><input aria-label={`Tên chương ${sectionIndex + 1}`} name={`section-${section.id}`} autoComplete="off" value={section.title} onChange={e => { const sections = currentCourse.sections.map((item, index) => index === sectionIndex ? {...item, title: e.target.value} : item); setCurrentCourse({...currentCourse, sections}); }} className="input-field" placeholder="Tên chương…" /><b>{section.items.length} bài</b></div><div className="admin-lessons">{section.items.map((item, itemIndex) => <div className="admin-lesson-row" key={item.id}><span className="admin-lesson-number">{itemIndex + 1}</span><select aria-label={`Loại bài ${itemIndex + 1}`} name={`lesson-type-${item.id}`} value={item.type} onChange={e => { const sections = currentCourse.sections.map((sec, secIndex) => secIndex === sectionIndex ? {...sec, items: sec.items.map((lesson, lessonIndex) => lessonIndex === itemIndex ? {...lesson, type: e.target.value} : lesson)} : sec); setCurrentCourse({...currentCourse, sections}); }} className="input-field"><option value="video">Video</option><option value="pdf">PDF</option></select><input aria-label={`Tên bài ${itemIndex + 1}`} name={`lesson-title-${item.id}`} autoComplete="off" value={item.title} onChange={e => { const sections = currentCourse.sections.map((sec, secIndex) => secIndex === sectionIndex ? {...sec, items: sec.items.map((lesson, lessonIndex) => lessonIndex === itemIndex ? {...lesson, title: e.target.value} : lesson)} : sec); setCurrentCourse({...currentCourse, sections}); }} className="input-field" placeholder="Tên bài học…" /><input aria-label={`Liên kết bài ${itemIndex + 1}`} name={`lesson-url-${item.id}`} type="url" autoComplete="off" spellCheck={false} value={item.url} onChange={e => { const sections = currentCourse.sections.map((sec, secIndex) => secIndex === sectionIndex ? {...sec, items: sec.items.map((lesson, lessonIndex) => lessonIndex === itemIndex ? {...lesson, url: e.target.value} : lesson)} : sec); setCurrentCourse({...currentCourse, sections}); }} className="input-field" placeholder="https://…" /><button className="admin-icon-delete" onClick={() => { if (confirm('Xóa bài này?')) { const sections = currentCourse.sections.map((sec, secIndex) => secIndex === sectionIndex ? {...sec, items: sec.items.filter((_, lessonIndex) => lessonIndex !== itemIndex)} : sec); setCurrentCourse({...currentCourse, sections}); } }}>Xóa</button></div>)}<button className="admin-add-row" onClick={() => { const sections = currentCourse.sections.map((sec, index) => index === sectionIndex ? {...sec, items: [...sec.items, { id: `item-${Date.now()}`, title: 'Bài học mới', type: 'video', url: '' }]} : sec); setCurrentCourse({...currentCourse, sections}); }}>+ Thêm bài học</button></div></article>)}</div>
+              <button className="admin-add-section" onClick={() => setCurrentCourse({...currentCourse, sections: [...currentCourse.sections, { id: `sec-${Date.now()}`, title: 'Chương mới', items: [] }]})}>+ Thêm chương mới</button>
+            </section>
           )}
 
           {activeTab === 'exams' && !currentExam && (
-            <div className="admin-panel">
-              <div className="admin-panel-header">
-                <div><h2>Quản lý đề thi</h2><p>Tải file đề từ máy lên trực tiếp, không cần GitHub hay Storage.</p></div>
-                <button className="btn-primary" onClick={handleAddExam}>+ Tạo Đề thi mới</button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-                {exams.map(exam => (
-                  <div key={exam.id} style={{ padding: '24px', border: '1px solid var(--gray-200)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <h3 style={{ margin: 0 }}>{exam.title}</h3>
-                    <p style={{ margin: 0, color: 'var(--gray-500)', wordBreak: 'break-all' }}>Nội dung: {exam.fileName || (exam.data ? 'Đề JSON đã lưu' : exam.markdownContent ? 'Đề Markdown đã lưu' : 'Chưa có')}</p>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setCurrentExam(exam)}>Chỉnh sửa</button>
-                      <button className="btn-secondary" style={{ color: 'red', padding: '8px' }} onClick={() => handleDeleteExam(exam.id)}>Xóa</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <section className="admin-panel" aria-labelledby="exams-heading"><div className="admin-panel-header"><div><h2 id="exams-heading">Ngân hàng đề thi</h2><p>Tải trực tiếp file JSON hoặc Markdown lên Supabase.</p></div><button className="btn-primary" onClick={handleAddExam}>+ Tạo đề thi</button></div><div className="admin-card-grid">{exams.map((exam, index) => <article className="admin-content-card" key={exam.id}><div className={`admin-card-cover exam tone-${index % 4}`}><span aria-hidden="true">📝</span><b>{exam.data ? 'JSON' : exam.markdownContent ? 'MD' : 'Trống'}</b></div><div className="admin-card-body"><p>ĐỀ THI #{exam.id}</p><h3>{exam.title}</h3><small>{exam.fileName || (exam.data ? 'Đề JSON đã sẵn sàng' : exam.markdownContent ? 'Đề Markdown đã sẵn sàng' : 'Chưa có nội dung')}</small><div className="admin-card-actions"><button className="btn-secondary" onClick={() => setCurrentExam(exam)}>Chỉnh sửa đề</button><button className="admin-icon-delete" onClick={() => handleDeleteExam(exam.id)}>Xóa</button></div></div></article>)}</div></section>
           )}
 
           {activeTab === 'exams' && currentExam && (
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <div>
-                  <button onClick={() => setCurrentExam(null)} style={{ background: 'none', border: 'none', color: 'var(--primary-600)', cursor: 'pointer', marginBottom: '8px' }}>← Quay lại danh sách</button>
-                  <h2>Chỉnh sửa: {currentExam.title}</h2>
-                </div>
-                <div>
-                  <button className="btn-primary" onClick={async () => {
-                    const newExams = exams.map(e => e.id === currentExam.id ? currentExam : e);
-                    setExams(newExams);
-                    await handleSaveExams(newExams);
-                    alert('Lưu đề thi thành công!');
-                  }}>Lưu Đề thi</button>
-                </div>
-              </div>
-
-              <div className="admin-guide">
-                <div className="admin-guide-title"><span>📤</span><div><strong>Tải đề thi lên trong 3 bước</strong><p>File được lưu thẳng vào database Supabase.</p></div></div>
-                <div className="admin-guide-steps"><div><b>1</b><strong>Chuẩn bị file</strong><span>JSON tương tác hoặc Markdown</span></div><div><b>2</b><strong>Chọn file</strong><span>Tối đa 2 MB</span></div><div><b>3</b><strong>Bấm lưu đề</strong><span>Học viên thấy ngay</span></div></div>
-                <p className="admin-guide-note">✅ JSON có chấm điểm tự động · Markdown dùng để đọc/in · Đáp án được bảo vệ đến khi nộp bài.</p>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-                <div>
-                  <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Tên đề thi:</label>
-                  <input value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Tên đề thi" />
-                </div>
-                <div className="admin-upload-zone">
-                  <label htmlFor="exam-file" style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Chọn file đề thi:</label>
-                  <input id="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => handleExamFile(e.target.files?.[0])} className="input-field" />
-                  <small style={{ display: 'block', marginTop: 8, color: 'var(--gray-600)' }}>
-                    {currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}
-                  </small>
-                </div>
-              </div>
-            </div>
+            <section className="admin-panel admin-editor-panel" aria-labelledby="exam-editor-heading"><div className="admin-panel-header"><div><button className="admin-back" onClick={() => setCurrentExam(null)}>← Ngân hàng đề</button><h2 id="exam-editor-heading">{currentExam.title}</h2><p>Cập nhật tên và nội dung đề thi.</p></div><button className="btn-primary" onClick={async () => { const newExams = exams.map(exam => exam.id === currentExam.id ? currentExam : exam); setExams(newExams); await handleSaveExams(newExams); setNotice('Đã lưu đề thi.'); }}>Lưu đề thi</button></div>{notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}<div className="admin-guide"><div className="admin-guide-title"><span aria-hidden="true">📤</span><div><strong>Tải đề thi trong 3 bước</strong><p>File được lưu trực tiếp vào database, không cần đưa lên GitHub.</p></div></div><ol className="admin-guide-steps"><li><b>1</b><span><strong>Chuẩn bị file</strong><small>JSON tương tác hoặc Markdown</small></span></li><li><b>2</b><span><strong>Chọn file từ máy</strong><small>Dung lượng tối đa 2 MB</small></span></li><li><b>3</b><span><strong>Lưu đề thi</strong><small>Học viên thấy ngay</small></span></li></ol><p className="admin-guide-note">✓ JSON hỗ trợ chấm điểm tự động · Markdown phù hợp để đọc hoặc in.</p></div><div className="admin-exam-form"><label><span>Tên đề thi</span><input name="exam-title" autoComplete="off" value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Nhập tên đề thi…" /></label><div className="admin-upload-zone"><label htmlFor="exam-file"><strong>Chọn file đề thi</strong><span>Chấp nhận .json hoặc .md, tối đa 2 MB</span></label><input id="exam-file" name="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => handleExamFile(e.target.files?.[0])} /><p>{currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}</p></div></div></section>
           )}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
