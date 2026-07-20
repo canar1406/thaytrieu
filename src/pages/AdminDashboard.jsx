@@ -255,63 +255,27 @@ const AdminDashboard = () => {
                 </div>
               </div>
               
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--gray-200)' }}>
-                      <th style={{ padding: '12px' }}>ID</th>
-                      <th style={{ padding: '12px' }}>Tên</th>
-                      <th style={{ padding: '12px' }}>Email</th>
-                      <th style={{ padding: '12px' }}>Mật khẩu</th>
-                      <th style={{ padding: '12px' }}>Quyền</th>
-                      <th style={{ padding: '12px', minWidth: '200px' }}>Khóa học được xem</th>
-                      <th style={{ padding: '12px' }}>Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(u => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
-                        <td style={{ padding: '12px' }}>{u.id}</td>
-                        <td style={{ padding: '12px' }}><input value={u.name} onChange={e => handleChangeUser(u.id, 'name', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
-                        <td style={{ padding: '12px' }}><input value={u.email} onChange={e => handleChangeUser(u.id, 'email', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
-                        <td style={{ padding: '12px' }}><input type="password" value={u.password || ''} placeholder="Để trống nếu không đổi" onChange={e => handleChangeUser(u.id, 'password', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
-                        <td style={{ padding: '12px' }}>
-                          <select value={u.role} onChange={e => handleChangeUser(u.id, 'role', e.target.value)} className="input-field" style={{ padding: '8px' }}>
-                            <option value="student">Học sinh</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '12px' }}>
-                          {u.role === 'admin' ? (
-                            <span style={{color: 'var(--gray-500)', fontSize: '12px'}}>Admin xem tất cả</span>
-                          ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto', border: '1px solid var(--gray-200)', padding: '8px', borderRadius: '4px', background: '#fafafa' }}>
-                              {courses.map(c => (
-                                <label key={c.id} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-                                  <input 
-                                    type="checkbox" 
-                                    checked={(u.allowedCourses || []).includes(c.id)}
-                                    onChange={e => {
-                                      const allowed = u.allowedCourses || [];
-                                      const newAllowed = e.target.checked 
-                                        ? [...allowed, c.id]
-                                        : allowed.filter(id => id !== c.id);
-                                      handleChangeUser(u.id, 'allowedCourses', newAllowed);
-                                    }}
-                                  />
-                                  {c.title}
-                                </label>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                        <td style={{ padding: '12px' }}>
-                          <button onClick={() => handleDeleteUser(u.id)} style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer' }}>Xóa</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="admin-user-list">
+                {users.map((u, index) => (
+                  <article className="admin-user-card" key={u.id}>
+                    <div className="admin-user-card-head">
+                      <div className="admin-user-identity"><span className="admin-user-avatar">{(u.name || '?').charAt(0).toUpperCase()}</span><div><strong>{u.name || 'Học viên mới'}</strong><small>{u.role === 'admin' ? 'Quản trị viên' : `Học viên #${index + 1}`}</small></div></div>
+                      <button className="admin-delete-btn" onClick={() => handleDeleteUser(u.id)}>Xóa tài khoản</button>
+                    </div>
+                    <div className="admin-user-fields">
+                      <label><span>Họ và tên</span><input value={u.name} onChange={e => handleChangeUser(u.id, 'name', e.target.value)} className="input-field" /></label>
+                      <label><span>Email đăng nhập</span><input type="email" value={u.email} onChange={e => handleChangeUser(u.id, 'email', e.target.value)} className="input-field" /></label>
+                      <label><span>Mật khẩu mới</span><input type="password" value={u.password || ''} placeholder="Để trống nếu không đổi" onChange={e => handleChangeUser(u.id, 'password', e.target.value)} className="input-field" /></label>
+                      <label><span>Loại tài khoản</span><select value={u.role} onChange={e => handleChangeUser(u.id, 'role', e.target.value)} className="input-field"><option value="student">Học sinh</option><option value="admin">Admin</option></select></label>
+                    </div>
+                    <div className="admin-course-access">
+                      <div className="admin-course-access-title"><strong>Khóa học được phép xem</strong><span>{u.role === 'admin' ? 'Admin được xem toàn bộ' : `${(u.allowedCourses || []).length}/${courses.length} khóa đã chọn`}</span></div>
+                      {u.role !== 'admin' && <div className="admin-course-checks">{courses.map(c => (
+                        <label key={c.id} className={(u.allowedCourses || []).includes(c.id) ? 'checked' : ''}><input type="checkbox" checked={(u.allowedCourses || []).includes(c.id)} onChange={e => { const allowed = u.allowedCourses || []; handleChangeUser(u.id, 'allowedCourses', e.target.checked ? [...allowed, c.id] : allowed.filter(id => id !== c.id)); }} /><span>{c.title}</span></label>
+                      ))}</div>}
+                    </div>
+                  </article>
+                ))}
               </div>
             </div>
           )}

@@ -39,4 +39,27 @@
 .admin-panel table th:nth-child(6), .admin-panel table td:nth-child(6) { min-width: 290px; }
 .admin-panel table thead { position: sticky; top: 0; background: white; z-index: 1; }
 .admin-panel table tbody tr:hover { background: #f8faff; }
+.admin-user-list { display: grid; gap: 16px; }
+.admin-user-card { padding: 18px; border: 1px solid #dde6f3; border-radius: 16px; background: linear-gradient(145deg,#fff,#fbfcff); box-shadow: 0 5px 18px rgba(32,62,120,.05); }
+.admin-user-card-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid #edf1f7; }
+.admin-user-identity { display: flex; align-items: center; gap: 11px; }
+.admin-user-identity > div { display: flex; flex-direction: column; gap: 2px; }
+.admin-user-identity small { color: #758198; }
+.admin-user-avatar { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 12px; color: white; font-weight: 800; background: linear-gradient(135deg,#3b82f6,#6366f1); }
+.admin-delete-btn { border: 0; border-radius: 9px; padding: 8px 11px; color: #dc2626; background: #fff1f2; font-weight: 700; cursor: pointer; }
+.admin-delete-btn:hover { background: #ffe4e6; }
+.admin-user-fields { display: grid; grid-template-columns: 1.15fr 1.25fr 1.15fr .7fr; gap: 12px; }
+.admin-user-fields label { min-width: 0; }
+.admin-user-fields label > span { display: block; margin: 0 0 6px 2px; color: #526078; font-size: .74rem; font-weight: 700; }
+.admin-user-fields .input-field { min-width: 0; height: 40px; }
+.admin-course-access { margin-top: 15px; padding: 14px; border-radius: 13px; background: #f5f8fd; }
+.admin-course-access-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.admin-course-access-title strong { font-size: .84rem; }
+.admin-course-access-title span { color: #64748b; font-size: .75rem; }
+.admin-course-checks { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.admin-course-checks label { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 9px 10px; border: 1px solid #dbe4f1; border-radius: 10px; background: white; cursor: pointer; }
+.admin-course-checks label.checked { border-color: #93b4f5; background: #edf4ff; color: #174ea6; }
+.admin-course-checks label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .76rem; }
+@media (max-width: 1200px) { .admin-user-fields { grid-template-columns: repeat(2,1fr); } .admin-course-checks { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 900px) { .admin-app .app-layout { display: block; overflow: auto; } .admin-main { width: 100% !important; padding: 14px; } .admin-page-banner { align-items: flex-start; flex-direction: column; } .admin-guide-steps { grid-template-columns: 1fr; } .admin-panel-header { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 620px) { .admin-user-fields, .admin-course-checks { grid-template-columns: 1fr; } .admin-user-card-head, .admin-course-access-title { align-items: flex-start; flex-direction: column; } }
