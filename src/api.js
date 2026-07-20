@@ -38,7 +38,7 @@ export async function apiFetch(path, options = {}) {
     return user ? jsonResponse({ user }) : jsonResponse({ error: 'Chưa đăng nhập.' }, 401);
   }
   if (path === '/catalog') {
-    return result(await supabase.from('course_catalog').select('id,title,description,section_count'), rows => rows.map(r => ({ ...r, desc: r.description })));
+    return result(await supabase.from('course_catalog').select('id,title,description'), rows => rows.map(r => ({ ...r, desc: r.description })));
   }
   if (path === '/courses' && method === 'GET') {
     return result(await supabase.from('courses').select('id,title,description,content'), rows => rows.map(r => ({
@@ -57,7 +57,7 @@ export async function apiFetch(path, options = {}) {
     return result(await supabase.from('courses').upsert(rows), () => ({ success: true }));
   }
   if (courseMatch && method === 'POST') {
-    const { id, title, desc, ...content } = body;
+    const { title, desc, ...content } = body;
     return result(await supabase.from('courses').upsert({ id: Number(courseMatch[1]), title, description: desc || '', content }), () => ({ success: true }));
   }
   if (courseMatch && method === 'DELETE') return result(await supabase.from('courses').delete().eq('id', courseMatch[1]), () => ({ success: true }));
@@ -72,9 +72,28 @@ export async function apiFetch(path, options = {}) {
     const response = await supabase.functions.invoke('admin-users', { body: { users: body } });
     return result(response, data => data);
   }
-  if (path === '/exams' && method === 'GET') return result(await supabase.from('exams').select('id,title,payload'), rows => rows.map(r => ({ id: r.id, title: r.title, ...r.payload })));
+  if (path === '/exams' && method === 'GET') {
+    const profile = await currentProfile();
+    const query = profile?.role === 'admin'
+      ? await supabase.from('exams').select('id,title,payload')
+      : await supabase.rpc('get_student_exams');
+    return result(query, rows => rows.map(r => ({ id: r.id, title: r.title, ...r.payload })));
+  }
   if (path === '/exams' && method === 'POST') {
     return result(await supabase.from('exams').upsert(body.map(({ id, title, ...payload }) => ({ id: String(id), title, payload }))), () => ({ success: true }));
+  }
+  const examMatch = path.match(/^\/exams\/(.+)$/);
+  if (examMatch && method === 'DELETE') return result(await supabase.from('exams').delete().eq('id', decodeURIComponent(examMatch[1])), () => ({ success: true }));
+  const submitMatch = path.match(/^\/exams\/(.+)\/submit$/);
+  if (submitMatch && method === 'POST') return result(await supabase.rpc('submit_exam', { p_exam_id: decodeURIComponent(submitMatch[1]), p_answers: body }), value => value);
+
+  if (path === '/progress' && method === 'GET') return result(await supabase.from('lesson_progress').select('course_id,lesson_id'));
+  const progressMatch = path.match(/^\/progress\/(\d+)$/);
+  if (progressMatch && method === 'GET') return result(await supabase.from('lesson_progress').select('lesson_id').eq('course_id', progressMatch[1]), rows => rows.map(r => r.lesson_id));
+  if (progressMatch && method === 'POST') {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return jsonResponse({ error: 'Chưa đăng nhập.' }, 401);
+    return result(await supabase.from('lesson_progress').upsert({ user_id: user.id, course_id: Number(progressMatch[1]), lesson_id: String(body.lessonId) }), () => ({ success: true }));
   }
   if (path === '/github-push') return jsonResponse({ success: true, message: 'Supabase cập nhật trực tiếp; không cần Git push.' });
   return jsonResponse({ error: 'API không tồn tại.' }, 404);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -10,7 +10,7 @@ const MarkdownContent = ({ children }) => (
     remarkPlugins={[remarkMath]}
     rehypePlugins={[rehypeKatex]}
     components={{
-      p: ({node, ...props}) => <span className="md-paragraph" {...props} />
+      p: ({ node: _node, ...props }) => <span className="md-paragraph" {...props} />
     }}
   >
     {children}
@@ -26,6 +26,18 @@ export default function ExamPractice({ onBackToDashboard }) {
   const [userAnswers, setUserAnswers] = useState({ part1: {}, part2: {}, part3: {} });
   const [timeLeft, setTimeLeft] = useState(90 * 60); // 90 minutes
   const timerRef = useRef(null);
+
+  const handleSubmitExam = useCallback(async () => {
+    clearInterval(timerRef.current);
+    if (!selectedExam?.id) return;
+    const response = await apiFetch(`/exams/${encodeURIComponent(selectedExam.id)}/submit`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userAnswers)
+    });
+    const result = await response.json();
+    if (!response.ok) return alert(result.error || 'Không thể nộp bài.');
+    setSelectedExam(current => ({ ...current, data: result.data }));
+    setView('result');
+  }, [selectedExam, userAnswers]);
 
   useEffect(() => {
     apiFetch('/exams')
@@ -50,7 +62,7 @@ export default function ExamPractice({ onBackToDashboard }) {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [view, timeLeft]);
+  }, [view, timeLeft, handleSubmitExam]);
 
   const [markdownContent, setMarkdownContent] = useState('');
 
@@ -80,11 +92,6 @@ export default function ExamPractice({ onBackToDashboard }) {
     } else {
       setView('exam');
     }
-  };
-
-  const handleSubmitExam = () => {
-    clearInterval(timerRef.current);
-    setView('result');
   };
 
   const handleBackToList = () => {
@@ -128,12 +135,10 @@ export default function ExamPractice({ onBackToDashboard }) {
     if (!selectedExam) return 0;
     const { data } = selectedExam;
     let score = 0;
-    let totalQuestions = 0;
 
     // Part 1: 0.25 points each
     if (data.part1_multipleChoice) {
       data.part1_multipleChoice.forEach(q => {
-        totalQuestions++;
         const correctOpt = q.options.find(o => o.isCorrect);
         if (correctOpt && userAnswers.part1[q.id] === correctOpt.key) {
           score += 0.25;
@@ -145,7 +150,6 @@ export default function ExamPractice({ onBackToDashboard }) {
     // 1 correct = 0.1, 2 correct = 0.25, 3 correct = 0.5, 4 correct = 1.0
     if (data.part2_trueFalse) {
       data.part2_trueFalse.forEach(q => {
-        totalQuestions++;
         let correctCount = 0;
         const userQAnswers = userAnswers.part2[q.id] || {};
         q.statements.forEach(stmt => {
@@ -163,7 +167,6 @@ export default function ExamPractice({ onBackToDashboard }) {
     // Part 3: 0.5 points each
     if (data.part3_shortAnswer) {
       data.part3_shortAnswer.forEach(q => {
-        totalQuestions++;
         const userAnswer = (userAnswers.part3[q.id] || "").toString().trim();
         const correctAnswer = (q.correctAnswer || "").toString().trim();
         if (userAnswer && userAnswer === correctAnswer) {
@@ -225,7 +228,7 @@ export default function ExamPractice({ onBackToDashboard }) {
         <div className="topbar-wrapper">
           <header className="topbar">
             <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button className="topbar-btn" onClick={onBackToDashboard} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
+              <button aria-label="Quay lại Dashboard" className="topbar-btn" onClick={onBackToDashboard} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
               </button>
               <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
@@ -233,7 +236,7 @@ export default function ExamPractice({ onBackToDashboard }) {
             </div>
             
             <div className="nav-links" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-              <span className="nav-link-item" onClick={onBackToDashboard} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
+              <span role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onBackToDashboard()} className="nav-link-item" onClick={onBackToDashboard} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
             </div>
 
             <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -272,7 +275,7 @@ export default function ExamPractice({ onBackToDashboard }) {
       <div className="topbar-wrapper">
         <header className="topbar">
           <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button className="topbar-btn" onClick={handleBackToList} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
+            <button aria-label="Quay lại danh sách đề" className="topbar-btn" onClick={handleBackToList} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
             </button>
             <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
@@ -285,7 +288,7 @@ export default function ExamPractice({ onBackToDashboard }) {
           </div>
 
           <div className="nav-links" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-            <span className="nav-link-item" onClick={handleBackToList} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
+            <span role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && handleBackToList()} className="nav-link-item" onClick={handleBackToList} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
           </div>
 
           <div className="topbar-actions header-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

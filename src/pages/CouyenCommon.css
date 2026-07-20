@@ -471,7 +471,21 @@
   transition: border-color var(--transition-fast);
 }
 .input-field:focus {
-  outline: none;
   border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.18);
   background-color: white;
+}
+
+@media (max-width: 768px) {
+  .couyen-app .app-layout { display: block; overflow: auto; }
+  .couyen-app .sidebar {
+    width: auto; height: auto; margin: 8px; border-radius: 16px;
+  }
+  .couyen-app .sidebar-logo { display: none; }
+  .couyen-app .sidebar-nav {
+    flex-direction: row; overflow-x: auto; padding: 8px; gap: 6px;
+  }
+  .couyen-app .nav-section-title, .couyen-app .sidebar-footer { display: none; }
+  .couyen-app .nav-item { white-space: nowrap; }
+  .couyen-app .main-content { min-width: 0; width: 100%; }
 }

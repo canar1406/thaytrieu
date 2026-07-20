@@ -16,6 +16,14 @@ const AdminDashboard = () => {
   const [exams, setExams] = useState([]);
   const [currentExam, setCurrentExam] = useState(null); // When editing an exam
 
+  useEffect(() => {
+    apiFetch('/me').then(r => r.ok ? r.json() : null).then(data => {
+      if (data?.user?.role === 'admin') {
+        setIsAdmin(true); loadUsers(); loadCourses(); loadExams();
+      }
+    });
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -34,7 +42,7 @@ const AdminDashboard = () => {
       } else {
         setErrorMsg(data.message || 'Lỗi đăng nhập');
       }
-    } catch (error) {
+    } catch {
       setErrorMsg('Không thể kết nối đến Local Server. Hãy chắc chắn bạn đã chạy file start-admin.bat');
     }
   };
@@ -84,12 +92,15 @@ const AdminDashboard = () => {
 
   const handleSaveExams = async (updatedExams) => {
     try {
-      await apiFetch(`/exams`, {
+      const response = await apiFetch(`/exams`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedExams)
       });
-    } catch (e) { alert('Lỗi khi lưu đề thi!'); }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Không thể lưu đề thi');
+      return true;
+    } catch (e) { alert(`Lỗi khi lưu đề thi: ${e.message}`); return false; }
   };
 
   const handleAddExam = () => {
@@ -111,11 +122,11 @@ const AdminDashboard = () => {
     handleSaveExams(updatedExams);
   };
 
-  const handleDeleteExam = (id) => {
+  const handleDeleteExam = async (id) => {
     if (!confirm('Bạn có chắc muốn xóa đề thi này?')) return;
-    const updatedExams = exams.filter(e => e.id !== id);
-    setExams(updatedExams);
-    handleSaveExams(updatedExams);
+    const response = await apiFetch(`/exams/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (!response.ok) return alert('Không thể xóa đề thi.');
+    setExams(exams.filter(e => e.id !== id));
   };
 
   const handleDeleteUser = (id) => {
@@ -150,7 +161,7 @@ const AdminDashboard = () => {
         body: JSON.stringify({ id: String(newId), title, desc: "", sections: [] })
       });
       alert('Đã tạo khóa học mới!');
-    } catch (e) {
+    } catch {
       alert('Lỗi khi tạo khóa học!');
     }
   };
@@ -170,22 +181,9 @@ const AdminDashboard = () => {
       // Delete file via API
       await apiFetch(`/courses/${id}`, { method: 'DELETE' });
       alert('Đã xóa khóa học!');
-    } catch (e) {
+    } catch {
       alert('Lỗi khi xóa!');
     }
-  };
-
-  const handlePublish = async () => {
-    if (!confirm('Bạn có chắc muốn đồng bộ tất cả thay đổi (nháp) lên trang web thật không?')) return;
-    try {
-      const res = await apiFetch(`/github-push`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        alert('Đã đồng bộ lên Web thành công! Vui lòng đợi 1-2 phút để trang web cập nhật.');
-      } else {
-        alert('Lỗi: ' + data.error);
-      }
-    } catch (e) { alert('Không thể kết nối đến máy chủ Local.'); }
   };
 
   if (!isAdmin) {
@@ -225,9 +223,7 @@ const AdminDashboard = () => {
             <div className={`nav-item ${activeTab === 'exams' ? 'active' : ''}`} onClick={() => {setActiveTab('exams'); setCurrentCourse(null); setCurrentExam(null);}} style={{cursor: 'pointer'}}>
               Quản lý Đề thi
             </div>
-            <div className={`nav-item ${activeTab === 'publish' ? 'active' : ''}`} onClick={() => {setActiveTab('publish'); setCurrentCourse(null);}} style={{cursor: 'pointer', marginTop: 'auto', background: 'var(--primary-50)', color: 'var(--primary-700)'}}>
-              ☁️ Đồng bộ lên Web
-            </div>
+            <button className="nav-item" style={{ marginTop: 'auto', background: 'none' }} onClick={async () => { await apiFetch('/logout', { method: 'POST' }); setIsAdmin(false); }}>Đăng xuất</button>
           </div>
         </aside>
 
@@ -441,18 +437,6 @@ const AdminDashboard = () => {
                   });
                 }}>+ Thêm Chương mới</button>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'publish' && (
-            <div style={{ background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-              <h1 style={{ color: 'var(--primary-600)', marginBottom: '16px' }}>Đồng bộ Dữ liệu</h1>
-              <p style={{ color: 'var(--gray-600)', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px auto' }}>
-                Tất cả các thay đổi về khóa học, bài giảng và tài khoản bạn vừa thực hiện đều là bản nháp và chỉ đang lưu trên máy tính này.
-                <br/><br/>
-                Bấm vào nút bên dưới để Đẩy (Push) toàn bộ dữ liệu mới nhất lên trang web trực tuyến (GitHub Pages). Trang web sẽ tự cập nhật sau khoảng 1 đến 2 phút.
-              </p>
-              <button className="btn-primary" style={{ padding: '16px 32px', fontSize: '18px' }} onClick={handlePublish}>🚀 ĐỒNG BỘ LÊN WEB (PUBLISH)</button>
             </div>
           )}
 

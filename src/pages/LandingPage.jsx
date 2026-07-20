@@ -7,149 +7,15 @@ import emailjs from '@emailjs/browser';
 import {
   Chart as ChartJS,
   RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend,
-  CategoryScale, LinearScale, BarElement,
 } from 'chart.js';
-import { Radar, Bar } from 'react-chartjs-2';
+import { Radar } from 'react-chartjs-2';
 import './LandingPage.css';
 import { apiFetch } from '../api';
 
 ChartJS.register(
-  RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend,
-  CategoryScale, LinearScale, BarElement
+  RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend
 );
 gsap.registerPlugin(useGSAP, ScrollTrigger);
-
-/* ────────── DATA ────────── */
-const COURSES = [
-  { icon: '📐', title: 'Đại Số & Giải Tích', desc: 'Nền tảng vững từ hàm số, giới hạn, đạo hàm đến tích phân. Phương pháp giải thông minh, bài tập từ cơ bản đến nâng cao.' },
-  { icon: '🔷', title: 'Hình Học Không Gian', desc: 'Chinh phục khối đa diện và hình tròn xoay. Rèn tư duy 3D qua sơ đồ trực quan và bài toán thực tế hấp dẫn.' },
-  { icon: '🎲', title: 'Tổ Hợp & Xác Suất', desc: 'Thành thạo tổ hợp, xác suất – dạng bài thường gặp nhất trong đề THPT. Kỹ thuật giải nhanh, chính xác.' },
-  { icon: '〰️', title: 'Lượng Giác', desc: 'Công thức lượng giác, phương trình và bất phương trình. Kỹ thuật biến đổi thông minh giúp giải bài nhanh hơn.' },
-  { icon: '✍️', title: 'Bài Tập Có Chữa', desc: 'Mỗi buổi học có bài tập về nhà được chữa chi tiết từng bước. Hỏi bài thoải mái 24/7 qua Zalo.' },
-  { icon: '🗓️', title: 'Lịch Học Linh Hoạt', desc: 'Sắp xếp lịch theo thời gian của học sinh. Hỗ trợ học online hoặc trực tiếp đều được đảm bảo chất lượng.' },
-];
-
-const COMMITS = [
-  { icon: '📈', text: 'Cam kết cải thiện điểm số ít nhất 1.5–2 điểm sau 3 tháng học chăm chỉ' },
-  { icon: '🎯', text: 'Minh bạch học phí từ đầu, không phát sinh chi phí ẩn trong quá trình học' },
-  { icon: '💬', text: 'Hỗ trợ hỏi bài qua Zalo 24/7, kể cả buổi tối và cuối tuần' },
-  { icon: '📋', text: 'Lộ trình học tập cá nhân hóa, phù hợp với mục tiêu và năng lực từng học sinh' },
-];
-
-const TIMELINE = [
-  {
-    year: '2023',
-    items: [
-      { icon: '🥇', text: <><strong>Thủ khoa</strong> đầu vào Chuyên Toán Long An (10đ Toán thường, 8đ Toán chuyên)</> },
-    ],
-  },
-  {
-    year: '2024',
-    items: [
-      { icon: '🥈', text: <><strong>Giải Nhì</strong> kỳ thi HSG cấp Tỉnh Long An</> },
-      { icon: '🥉', text: <><strong>Huy chương Đồng</strong> Olympic 30/4 khu vực miền Nam</> },
-      { icon: '🏟️', text: <>Tham gia <strong>Đội tuyển HSG Quốc Gia</strong> môn Toán</> },
-    ],
-  },
-  {
-    year: '2025',
-    items: [
-      { icon: '🥈', text: <><strong>Giải Nhì</strong> HSG cấp Tỉnh Long An</> },
-      { icon: '🥇', text: <><strong>Giải Nhất</strong> Olympic Miền Trung – Tây Nguyên mở rộng</> },
-      { icon: '👑', text: <><strong>Thủ Khoa (39/40)</strong> kỳ thi chọn HSG dự thi Quốc Gia</> },
-      { icon: '🌏', text: <><strong>Giải Aluminium Compass</strong> – Kỳ thi Hình Học Quốc Tế Iran (IGO)</> },
-      { icon: '🏅', text: <><strong>Giải Ba</strong> kỳ thi HSG Quốc Gia môn Toán</> },
-      { icon: '🎓', text: <><strong>Tuyển thẳng</strong> ĐH Sư Phạm Hà Nội & ĐH Sư Phạm TP.HCM</> },
-      { icon: '📝', text: <><strong>9,5 điểm</strong> môn Toán kỳ thi Tốt nghiệp THPT Quốc Gia</> },
-    ],
-  },
-];
-
-/* ── Radar Chart: thầy Triều's skill profile ── */
-const radarData = {
-  labels: ['Đại Số', 'Hình Học', 'Giải Tích', 'Tổ Hợp', 'Lượng Giác', 'Số Phức'],
-  datasets: [
-    {
-      label: 'Năng lực giảng dạy',
-      data: [95, 98, 92, 90, 88, 85],
-      backgroundColor: 'rgba(59,110,244,0.12)',
-      borderColor: 'rgba(59,110,244,0.8)',
-      borderWidth: 2,
-      pointBackgroundColor: 'rgba(59,110,244,1)',
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    },
-  ],
-};
-
-const radarOptions = {
-  responsive: true, maintainAspectRatio: false,
-  scales: {
-    r: {
-      min: 60, max: 100,
-      ticks: { display: false, stepSize: 10 },
-      grid: { color: 'rgba(99,113,183,0.15)' },
-      angleLines: { color: 'rgba(99,113,183,0.12)' },
-      pointLabels: {
-        font: { size: 11, family: 'Inter', weight: '600' },
-        color: '#374151',
-      },
-    },
-  },
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: 'rgba(255,255,255,0.95)',
-      titleColor: '#111827', bodyColor: '#374151',
-      borderColor: 'rgba(59,110,244,0.2)', borderWidth: 1,
-      cornerRadius: 10, padding: 10,
-      callbacks: { label: (ctx) => ` ${ctx.raw}/100` },
-    },
-  },
-};
-
-/* ── Bar Chart: học viên tăng điểm ── */
-const barData = {
-  labels: ['Học viên A', 'Học viên B', 'Học viên C', 'Học viên D', 'Học viên E'],
-  datasets: [
-    {
-      label: 'Điểm ban đầu',
-      data: [5.5, 6.0, 5.0, 6.5, 5.5],
-      backgroundColor: 'rgba(99,113,183,0.25)',
-      borderRadius: 8, borderSkipped: false,
-    },
-    {
-      label: 'Điểm sau khi học',
-      data: [8.5, 8.0, 7.5, 9.0, 8.0],
-      backgroundColor: 'rgba(59,110,244,0.75)',
-      borderRadius: 8, borderSkipped: false,
-    },
-  ],
-};
-
-const barOptions = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: { font: { size: 11, family: 'Inter' }, color: '#374151', boxWidth: 12, borderRadius: 4, useBorderRadius: true },
-    },
-    tooltip: {
-      backgroundColor: 'rgba(255,255,255,0.95)',
-      titleColor: '#111827', bodyColor: '#374151',
-      borderColor: 'rgba(59,110,244,0.2)', borderWidth: 1,
-      cornerRadius: 10, padding: 10,
-    },
-  },
-  scales: {
-    x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#6b7280' } },
-    y: {
-      min: 0, max: 10,
-      grid: { color: 'rgba(99,113,183,0.1)' },
-      ticks: { font: { size: 11 }, color: '#6b7280', callback: (v) => `${v}đ` },
-    },
-  },
-};
 
 /* ────────────────────────── COMPONENT ────────────────────────── */
 const LandingPage = () => {

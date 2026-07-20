@@ -60,13 +60,7 @@ const CoursePage = () => {
     setCurrentItem(null);
     setHistoryStack([null]);
     setHistoryIndex(0);
-    // Load completed items from local storage
-    const saved = localStorage.getItem(`completed_${id}`);
-    if (saved) {
-      setCompletedItems(new Set(JSON.parse(saved)));
-    } else {
-      setCompletedItems(new Set());
-    }
+    apiFetch(`/progress/${id}`).then(r => r.ok ? r.json() : []).then(items => setCompletedItems(new Set(items))).catch(() => setCompletedItems(new Set()));
   }, [id]);
 
   // Timer Effect
@@ -81,7 +75,7 @@ const CoursePage = () => {
             setCompletedItems(prevSet => {
               const newSet = new Set(prevSet);
               newSet.add(currentItem.id);
-              localStorage.setItem(`completed_${id}`, JSON.stringify([...newSet]));
+              apiFetch(`/progress/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId: currentItem.id }) });
               return newSet;
             });
             clearInterval(timer);
@@ -360,7 +354,7 @@ const CoursePage = () => {
                               setCompletedItems(prevSet => {
                                 const newSet = new Set(prevSet);
                                 newSet.add(currentItem.id);
-                                localStorage.setItem(`completed_${id || '1'}`, JSON.stringify([...newSet]));
+                                apiFetch(`/progress/${id || '1'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lessonId: currentItem.id }) });
                                 return newSet;
                               });
                             }}
