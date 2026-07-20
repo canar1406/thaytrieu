@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './CouyenCommon.css'; // For glassmorphism styles
 import './Dashboard.css'; // For sidebar layout
+import './AdminDashboard.css';
 import { apiFetch } from '../api';
 
 const AdminDashboard = () => {
@@ -221,9 +222,9 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="couyen-app">
+    <div className="couyen-app admin-app">
       <div className="app-layout">
-        <aside className="sidebar">
+        <aside className="sidebar admin-sidebar">
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon">T</div>
             <div className="sidebar-logo-text">
@@ -232,24 +233,22 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="sidebar-nav">
-            <div className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => {setActiveTab('users'); setCurrentCourse(null);}} style={{cursor: 'pointer'}}>
-              Quản lý Học sinh
-            </div>
-            <div className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => {setActiveTab('courses'); setCurrentCourse(null); setCurrentExam(null);}} style={{cursor: 'pointer'}}>
-              Quản lý Khóa học
-            </div>
-            <div className={`nav-item ${activeTab === 'exams' ? 'active' : ''}`} onClick={() => {setActiveTab('exams'); setCurrentCourse(null); setCurrentExam(null);}} style={{cursor: 'pointer'}}>
-              Quản lý Đề thi
-            </div>
+            <button className={`nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => {setActiveTab('users'); setCurrentCourse(null);}}>👥 <span>Học sinh</span></button>
+            <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => {setActiveTab('courses'); setCurrentCourse(null); setCurrentExam(null);}}>📚 <span>Khóa học</span></button>
+            <button className={`nav-item ${activeTab === 'exams' ? 'active' : ''}`} onClick={() => {setActiveTab('exams'); setCurrentCourse(null); setCurrentExam(null);}}>📝 <span>Đề thi</span></button>
             <button className="nav-item" style={{ marginTop: 'auto', background: 'none' }} onClick={async () => { await apiFetch('/logout', { method: 'POST' }); setIsAdmin(false); }}>Đăng xuất</button>
           </div>
         </aside>
 
-        <main className="main-content" style={{ padding: '32px', overflowY: 'auto' }}>
+        <main className="main-content admin-main">
+          <header className="admin-page-banner">
+            <div><span className="admin-eyebrow">TRUNG TÂM QUẢN TRỊ</span><h1>Xin chào, thầy Triều 👋</h1><p>Mọi thay đổi được lưu trực tiếp và bảo mật trên Supabase.</p></div>
+            <div className="admin-stats"><span><strong>{users.length}</strong> học viên</span><span><strong>{courses.length}</strong> khóa học</span><span><strong>{exams.length}</strong> đề thi</span></div>
+          </header>
           {activeTab === 'users' && (
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2>Quản lý Học sinh</h2>
+            <div className="admin-panel">
+              <div className="admin-panel-header">
+                <div><h2>Quản lý học sinh</h2><p>Thêm tài khoản và chọn chính xác khóa học mỗi em được xem.</p></div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button className="btn-secondary" onClick={handleAddUser}>+ Thêm học sinh</button>
                   <button className="btn-primary" onClick={handleSaveUsers}>Lưu thay đổi</button>
@@ -318,9 +317,9 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'courses' && !currentCourse && (
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2>Quản lý Khóa học</h2>
+            <div className="admin-panel">
+              <div className="admin-panel-header">
+                <div><h2>Quản lý khóa học</h2><p>Tạo khóa, sắp xếp chương và cập nhật nội dung bài giảng.</p></div>
                 <button className="btn-primary" onClick={handleAddCourse}>+ Tạo Khóa học mới</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
@@ -389,12 +388,10 @@ const AdminDashboard = () => {
                 <textarea value={currentCourse.desc} onChange={e => setCurrentCourse({...currentCourse, desc: e.target.value})} className="input-field" placeholder="Mô tả" rows={3}/>
               </div>
 
-              <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', color: 'var(--primary-700)' }}>
-                <strong>💡 Hướng dẫn nhập Link Video/Tài liệu</strong>
-                <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
-                  <li style={{ marginBottom: '6px' }}><strong>Youtube:</strong> Copy trực tiếp link video (ví dụ: <code>https://www.youtube.com/watch?v=...</code>) hoặc link rút gọn (<code>https://youtu.be/...</code>).</li>
-                  <li><strong>Google Drive (Video/PDF):</strong> Tải file lên Drive, bật chia sẻ <strong>"Bất kỳ ai có đường liên kết"</strong>, sau đó copy link chia sẻ dán vào đây. Hệ thống sẽ tự động nhúng!</li>
-                </ul>
+              <div className="admin-guide">
+                <div className="admin-guide-title"><span>💡</span><div><strong>Cách thêm nội dung bài học</strong><p>Làm lần lượt theo 3 bước dưới đây.</p></div></div>
+                <div className="admin-guide-steps"><div><b>1</b><strong>Chọn loại</strong><span>Video hoặc PDF</span></div><div><b>2</b><strong>Nhập tên bài</strong><span>Tên ngắn, dễ hiểu</span></div><div><b>3</b><strong>Dán liên kết</strong><span>YouTube hoặc Google Drive</span></div></div>
+                <p className="admin-guide-note">🔒 Tài liệu cần bảo mật không nên đặt Google Drive ở chế độ công khai.</p>
               </div>
 
               {/* Sections Edit */}
@@ -459,9 +456,9 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'exams' && !currentExam && (
-            <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-                <h2>Quản lý Đề thi</h2>
+            <div className="admin-panel">
+              <div className="admin-panel-header">
+                <div><h2>Quản lý đề thi</h2><p>Tải file đề từ máy lên trực tiếp, không cần GitHub hay Storage.</p></div>
                 <button className="btn-primary" onClick={handleAddExam}>+ Tạo Đề thi mới</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
@@ -496,11 +493,10 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div style={{ padding: '16px', background: 'var(--primary-50)', borderRadius: '12px', marginBottom: '24px', fontSize: '14px' }}>
-                <strong>💡 Tải file đề thi trực tiếp</strong>
-                <p style={{ margin: '8px 0 0 0' }}>
-                  Chọn file <strong>.json</strong> để có đề tương tác và chấm điểm, hoặc <strong>.md</strong> để hiển thị đề dạng văn bản. File được đọc và lưu thẳng vào Supabase, không cần đưa vào GitHub hay Supabase Storage. Giới hạn mỗi file là 2 MB.
-                </p>
+              <div className="admin-guide">
+                <div className="admin-guide-title"><span>📤</span><div><strong>Tải đề thi lên trong 3 bước</strong><p>File được lưu thẳng vào database Supabase.</p></div></div>
+                <div className="admin-guide-steps"><div><b>1</b><strong>Chuẩn bị file</strong><span>JSON tương tác hoặc Markdown</span></div><div><b>2</b><strong>Chọn file</strong><span>Tối đa 2 MB</span></div><div><b>3</b><strong>Bấm lưu đề</strong><span>Học viên thấy ngay</span></div></div>
+                <p className="admin-guide-note">✅ JSON có chấm điểm tự động · Markdown dùng để đọc/in · Đáp án được bảo vệ đến khi nộp bài.</p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
@@ -508,7 +504,7 @@ const AdminDashboard = () => {
                   <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Tên đề thi:</label>
                   <input value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Tên đề thi" />
                 </div>
-                <div>
+                <div className="admin-upload-zone">
                   <label htmlFor="exam-file" style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Chọn file đề thi:</label>
                   <input id="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => handleExamFile(e.target.files?.[0])} className="input-field" />
                   <small style={{ display: 'block', marginTop: 8, color: 'var(--gray-600)' }}>
