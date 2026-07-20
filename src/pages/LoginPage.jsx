@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import './LandingPage.css';
 import './LoginPage.css';
+import { apiFetch } from '../api';
 
 gsap.registerPlugin(useGSAP);
 
@@ -44,11 +45,14 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('./data/users.json');
-      const users = await response.json();
-      const user = users.find(u => u.email === email && u.password === password);
+      const response = await apiFetch('/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      const user = response.ok && data.success ? data.user : null;
       
       if (user) {
+        sessionStorage.setItem('authToken', data.token);
         localStorage.setItem('user', JSON.stringify(user));
         navigate('/dashboard');
       } else {

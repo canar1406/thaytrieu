@@ -5,6 +5,7 @@ import { Doughnut } from 'react-chartjs-2';
 import './CouyenCommon.css'; // Import the isolated CSS variables
 import './Dashboard.css';
 import ExamPractice from '../components/ExamPractice';
+import { apiFetch, getToken } from '../api';
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -20,24 +21,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
+    if (!storedUser || !getToken()) {
       navigate('/login');
       return;
     }
     const localUser = JSON.parse(storedUser);
     // Re-fetch fresh user data from server to get latest allowedCourses from admin
-    fetch('./data/users.json')
-      .then(r => r.json())
-      .then(users => {
-        const freshUser = users.find(u => u.id === localUser.id);
-        if (freshUser) {
-          localStorage.setItem('user', JSON.stringify(freshUser));
-          setUser(freshUser);
-        } else {
-          setUser(localUser);
-        }
+    apiFetch('/me')
+      .then(r => { if (!r.ok) throw new Error('unauthorized'); return r.json(); })
+      .then(({ user: freshUser }) => {
+        localStorage.setItem('user', JSON.stringify(freshUser));
+        setUser(freshUser);
       })
-      .catch(() => setUser(localUser));
+      .catch(() => navigate('/login'));
   }, [navigate]);
 
   useEffect(() => {
@@ -62,7 +58,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return;
-    fetch('./data/courses/course-list.json')
+    apiFetch('/courses')
       .then(res => res.json())
       .then(data => {
         if (user.role !== 'admin') {
@@ -88,8 +84,10 @@ const Dashboard = () => {
     ],
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await apiFetch('/logout', { method: 'POST' });
     localStorage.removeItem('user');
+    sessionStorage.removeItem('authToken');
     navigate('/login');
   };
 

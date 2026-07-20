@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import { Radar, Bar } from 'react-chartjs-2';
 import './LandingPage.css';
+import { apiFetch } from '../api';
 
 ChartJS.register(
   RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend,
@@ -165,7 +166,7 @@ const LandingPage = () => {
 
   // Load danh sách khoá học thực tế từ course-list.json (đồng bộ với trang Admin)
   useEffect(() => {
-    fetch('/data/courses/course-list.json')
+    apiFetch('/catalog')
       .then(r => r.json())
       .then(data => setCourseList(data))
       .catch(() => setCourseList([]));

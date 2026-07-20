@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './CouyenCommon.css'; // For glassmorphism styles
 import './Dashboard.css'; // For sidebar layout
-
-const API_BASE = 'http://localhost:3001/api';
+import { apiFetch } from '../api';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -20,13 +19,14 @@ const AdminDashboard = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_BASE}/login`, {
+      const res = await apiFetch(`/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm)
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.user?.role === 'admin') {
+        sessionStorage.setItem('authToken', data.token);
         setIsAdmin(true);
         loadUsers();
         loadCourses();
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const res = await apiFetch(`/users`);
       const data = await res.json();
       setUsers(data);
     } catch (e) { console.error(e); }
@@ -49,7 +49,7 @@ const AdminDashboard = () => {
 
   const loadCourses = async () => {
     try {
-      const res = await fetch(`${API_BASE}/courses`);
+      const res = await apiFetch(`/courses`);
       const data = await res.json();
       setCourses(data);
     } catch (e) { console.error(e); }
@@ -57,7 +57,7 @@ const AdminDashboard = () => {
 
   const loadExams = async () => {
     try {
-      const res = await fetch(`${API_BASE}/exams`);
+      const res = await apiFetch(`/exams`);
       const data = await res.json();
       setExams(data);
     } catch (e) { console.error(e); }
@@ -65,23 +65,26 @@ const AdminDashboard = () => {
 
   const handleSaveUsers = async () => {
     try {
-      await fetch(`${API_BASE}/users`, {
+      const response = await apiFetch(`/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(users)
       });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Không thể lưu học viên');
+      await loadUsers();
       alert('Đã lưu danh sách học sinh!');
-    } catch (e) { alert('Lỗi khi lưu!'); }
+    } catch (e) { alert(`Lỗi khi lưu: ${e.message}`); }
   };
 
   const handleAddUser = () => {
-    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-    setUsers([...users, { id: newId, email: '', password: '', name: '', role: 'student', courses: [] }]);
+    const newId = `new-${crypto.randomUUID()}`;
+    setUsers([...users, { id: newId, email: '', password: '', name: '', role: 'student', allowedCourses: [] }]);
   };
 
   const handleSaveExams = async (updatedExams) => {
     try {
-      await fetch(`${API_BASE}/exams`, {
+      await apiFetch(`/exams`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedExams)
@@ -135,13 +138,13 @@ const AdminDashboard = () => {
 
     // Save to course-list.json
     try {
-      await fetch(`${API_BASE}/courses`, {
+      await apiFetch(`/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCourses)
       });
       // Create empty course file
-      await fetch(`${API_BASE}/courses/${newId}`, {
+      await apiFetch(`/courses/${newId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: String(newId), title, desc: "", sections: [] })
@@ -159,13 +162,13 @@ const AdminDashboard = () => {
 
     try {
       // Update list
-      await fetch(`${API_BASE}/courses`, {
+      await apiFetch(`/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCourses)
       });
       // Delete file via API
-      await fetch(`${API_BASE}/courses/${id}`, { method: 'DELETE' });
+      await apiFetch(`/courses/${id}`, { method: 'DELETE' });
       alert('Đã xóa khóa học!');
     } catch (e) {
       alert('Lỗi khi xóa!');
@@ -175,7 +178,7 @@ const AdminDashboard = () => {
   const handlePublish = async () => {
     if (!confirm('Bạn có chắc muốn đồng bộ tất cả thay đổi (nháp) lên trang web thật không?')) return;
     try {
-      const res = await fetch(`${API_BASE}/github-push`, { method: 'POST' });
+      const res = await apiFetch(`/github-push`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         alert('Đã đồng bộ lên Web thành công! Vui lòng đợi 1-2 phút để trang web cập nhật.');
@@ -258,7 +261,7 @@ const AdminDashboard = () => {
                         <td style={{ padding: '12px' }}>{u.id}</td>
                         <td style={{ padding: '12px' }}><input value={u.name} onChange={e => handleChangeUser(u.id, 'name', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
                         <td style={{ padding: '12px' }}><input value={u.email} onChange={e => handleChangeUser(u.id, 'email', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
-                        <td style={{ padding: '12px' }}><input value={u.password} onChange={e => handleChangeUser(u.id, 'password', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
+                        <td style={{ padding: '12px' }}><input type="password" value={u.password || ''} placeholder="Để trống nếu không đổi" onChange={e => handleChangeUser(u.id, 'password', e.target.value)} className="input-field" style={{ padding: '8px' }}/></td>
                         <td style={{ padding: '12px' }}>
                           <select value={u.role} onChange={e => handleChangeUser(u.id, 'role', e.target.value)} className="input-field" style={{ padding: '8px' }}>
                             <option value="student">Học sinh</option>
@@ -313,7 +316,7 @@ const AdminDashboard = () => {
                     <p style={{ margin: 0, color: 'var(--gray-500)' }}>ID: {course.id} | Số bài: {course.totalLessons}</p>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn-secondary" style={{ flex: 1 }} onClick={() => {
-                         fetch(`${API_BASE}/courses/${course.id}`)
+                         apiFetch(`/courses/${course.id}`)
                            .then(res => res.json())
                            .then(data => setCurrentCourse(data));
                       }}>Chỉnh sửa nội dung</button>
@@ -335,7 +338,7 @@ const AdminDashboard = () => {
                 <div>
                   <button className="btn-primary" onClick={async () => {
                     // Update currentCourse data
-                    await fetch(`${API_BASE}/courses/${currentCourse.id}`, {
+                    await apiFetch(`/courses/${currentCourse.id}`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(currentCourse)
@@ -355,7 +358,7 @@ const AdminDashboard = () => {
                     );
                     setCourses(updatedCourses);
 
-                    await fetch(`${API_BASE}/courses`, {
+                    await apiFetch(`/courses`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(updatedCourses)

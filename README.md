@@ -271,3 +271,7 @@ Sau đó truy cập:
 ---
 
 *Dự án được xây dựng với mục tiêu mang lại trải nghiệm giáo dục tốt nhất cho học sinh chuẩn bị cho kỳ thi THPT Quốc Gia.*
+
+---
+
+> **Cập nhật kiến trúc bảo mật:** Dự án hiện dùng GitHub Pages + Supabase Auth/PostgreSQL RLS. Các hướng dẫn cũ liên quan đến `public/data`, mật khẩu JSON, local Node API và nút Git push không còn được sử dụng. Xem [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) để cấu hình và triển khai.

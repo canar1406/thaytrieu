@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import './ExamPractice.css';
+import { apiFetch } from '../api';
 
 const MarkdownContent = ({ children }) => (
   <ReactMarkdown
@@ -27,7 +28,7 @@ export default function ExamPractice({ onBackToDashboard }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    fetch('./data/exams.json')
+    apiFetch('/exams')
       .then(res => res.json())
       .then(data => setExams(data))
       .catch(err => console.error("Error loading exams:", err));

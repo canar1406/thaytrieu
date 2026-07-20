@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './CouyenCommon.css'; // Isolated design system
 import './CoursePage.css';
+import { apiFetch, getToken } from '../api';
 
 
 const CoursePage = () => {
@@ -13,26 +14,28 @@ const CoursePage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [user] = useState(() => {
-    const saved = localStorage.getItem('currentUser');
+    const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
 
   useEffect(() => {
     setIsLoading(true);
+    if (!user || !getToken()) { navigate('/login'); return; }
     Promise.all([
-      fetch(`./data/courses/course-${id || '1'}.json`).then(r => r.json()),
-      fetch(`./data/courses/course-list.json`).then(r => r.json())
+      apiFetch(`/courses/${id || '1'}`).then(r => { if (!r.ok) throw new Error('forbidden'); return r.json(); }),
+      apiFetch('/courses').then(r => r.json())
     ])
     .then(([courseData, courseList]) => {
       setDummyCourseData(courseData);
       setRegisteredCoursesList(courseList);
       setIsLoading(false);
+      navigate('/dashboard', { replace: true });
     })
     .catch(err => {
       console.error(err);
       setIsLoading(false);
     });
-  }, [id]);
+  }, [id, navigate, user]);
   
   const [expandedSections, setExpandedSections] = useState({ 
     'c9-sec1': true, 'c9-sec2': true,
@@ -182,7 +185,7 @@ const CoursePage = () => {
   };
 
   const dynamicCoursesList = registeredCoursesList
-    .filter(course => !user || user.role === 'admin' || (user.allowedCourses || []).includes(course.id))
+    .filter(course => user && (user.role === 'admin' || (user.allowedCourses || []).map(String).includes(String(course.id))))
     .map(course => ({
       ...course,
       progress: getDynamicProgress(course.id, course.progress, course.totalLessons)
