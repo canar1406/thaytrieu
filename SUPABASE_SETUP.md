@@ -6,7 +6,10 @@
 
 1. Tạo project tại Supabase.
 2. Mở **SQL Editor**, chạy toàn bộ `supabase/migrations/001_initial_schema.sql`.
-3. Trong **Authentication > URL Configuration**, đặt Site URL thành URL GitHub Pages và thêm redirect URL tương ứng.
+3. Sau khi file 001 chạy thành công, chạy tiếp toàn bộ `supabase/migrations/002_exam_privacy_and_progress.sql`. File 002 ẩn đáp án khỏi dữ liệu đề gửi cho học viên và bổ sung quyền cập nhật tiến độ.
+4. Trong **Authentication > URL Configuration**, đặt Site URL thành URL GitHub Pages và thêm redirect URL tương ứng.
+
+Nếu project đã chạy file 001 trước đây thì chỉ cần chạy file 002. Bản migration 002 có thể chạy lại an toàn nếu cần khôi phục policy.
 
 ## 2. Cấu hình máy local
 

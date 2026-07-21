@@ -38,7 +38,7 @@
   margin-bottom: 1rem;
 }
 
-.login-brand-centered h2 {
+.login-brand-centered h1 {
   font-size: 1.8rem;
   font-weight: 800;
   color: var(--t1);
@@ -70,6 +70,9 @@
 }
 
 .login-link {
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--blue);
   cursor: pointer;
   font-weight: 600;

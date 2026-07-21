@@ -1,5 +1,6 @@
 -- Prevent students from downloading answer keys before submitting.
 drop policy if exists "authenticated reads exams" on public.exams;
+drop policy if exists "admin reads exams" on public.exams;
 create policy "admin reads exams" on public.exams for select to authenticated using (public.is_admin());
 
 create or replace function public.strip_exam_answers(source jsonb)
@@ -51,5 +52,6 @@ begin
 end $$;
 grant execute on function public.submit_exam(text, jsonb) to authenticated;
 
+drop policy if exists "self updates progress" on public.lesson_progress;
 create policy "self updates progress" on public.lesson_progress for update to authenticated
 using (user_id = auth.uid()) with check (user_id = auth.uid());

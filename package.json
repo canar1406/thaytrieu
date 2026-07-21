@@ -7,7 +7,7 @@
     "dev": "vite",
     "supabase:import": "node --env-file=.env scripts/import-to-supabase.mjs",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "oxlint src --deny-warnings",
     "preview": "vite preview",
     "parse-exams": "node scripts/exam-parser.js"
   },

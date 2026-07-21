@@ -145,6 +145,7 @@
 .admin-user-directory-list strong, .admin-user-directory-list small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .admin-user-directory-list strong { font-size: .74rem; }
 .admin-user-directory-list small { color: var(--admin-muted); font-size: .64rem; }
+.admin-user-directory-list button.active small { color: #475467; }
 .admin-user-directory-list em { padding: 3px 6px; border-radius: 999px; color: #5c6b83; background: #eef1f6; font-size: .59rem; font-style: normal; white-space: nowrap; }
 .admin-user-directory-list button.active em { color: #3153c8; background: #dce7ff; }
 .admin-empty-small { padding: 28px 10px; color: var(--admin-muted); font-size: .75rem; text-align: center; }

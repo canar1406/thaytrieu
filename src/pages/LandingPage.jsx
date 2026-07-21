@@ -105,11 +105,12 @@ const LandingPage = () => {
   useEffect(() => {
     apiFetch('/catalog')
       .then(r => r.json())
-      .then(data => setCourseList(data))
+      .then(data => setCourseList(Array.isArray(data) ? data : []))
       .catch(() => setCourseList([]));
   }, []);
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // ── Navbar drop-in
     gsap.fromTo('.navbar',
       { y: -60, opacity: 0 },
@@ -244,12 +245,12 @@ const LandingPage = () => {
 
   return (
     <div className="lp-root" ref={rootRef}>
-      <div className="blob blob-1" />
-      <div className="blob blob-2" />
-      <div className="blob blob-3" />
+      <div className="blob blob-1" aria-hidden="true" />
+      <div className="blob blob-2" aria-hidden="true" />
+      <div className="blob blob-3" aria-hidden="true" />
 
       {/* ═══ MATH BACKGROUND ═══ */}
-      <div className="math-bg-container">
+      <div className="math-bg-container" aria-hidden="true">
         {/* Simple Symbols */}
         <span className="math-sym sym-1">∫</span>
         <span className="math-sym sym-2">∑</span>
@@ -276,7 +277,7 @@ const LandingPage = () => {
       <nav className="navbar">
         <div className="container navbar-inner">
           <div className="nav-logo">
-            <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" />
+            <img src="./logo.jpg" alt="" width="28" height="28" className="logo-icon" />
             <span>Toán Thầy Triều</span>
           </div>
           <div className="nav-links">
@@ -291,6 +292,7 @@ const LandingPage = () => {
         </div>
       </nav>
 
+      <main>
       {/* ═══ HERO ═══ */}
       <section className="hero-section">
         <div className="container">
@@ -344,7 +346,7 @@ const LandingPage = () => {
 
                 {/* Portrait frame */}
                 <div className="portrait-frame">
-                  <img src="./avt.jpg" alt="Thầy Phạm Liêu Hoàng Triều" className="portrait-img" />
+                  <img src="./avt.jpg" alt="Thầy Phạm Liêu Hoàng Triều" width="640" height="800" className="portrait-img" />
                 </div>
               </div>
             </div>
@@ -364,7 +366,7 @@ const LandingPage = () => {
             {courseList.map((c, i) => (
               <div key={c.id} className="course-card sr-child">
                 <div className="course-card-icon" aria-hidden="true">{['📐', '🔷', '🎯', '📊'][i % 4]}</div>
-                <h4>{c.title}</h4>
+                <h3>{c.title}</h3>
                 <p>{c.description || 'Lộ trình học được xây dựng từ nền tảng đến nâng cao, bám sát mục tiêu của học viên.'}</p>
               </div>
             ))}
@@ -408,9 +410,9 @@ const LandingPage = () => {
             <div className="teacher-right-panel sr-r">
               {/* Radar chart */}
               <div className="radar-card">
-                <h4>🕸️ Năng lực chuyên môn</h4>
+                <h3>🕸️ Năng lực chuyên môn</h3>
                 <div className="chart-wrap">
-                  <Radar data={radarData} options={radarOptions} />
+                  <Radar data={radarData} options={radarOptions} aria-label="Biểu đồ năng lực chuyên môn của thầy Triều" role="img" />
                 </div>
               </div>
 
@@ -418,7 +420,7 @@ const LandingPage = () => {
 
               {/* Score table */}
               <div className="score-glass">
-                <h4>🏆 Bảng thành tích chi tiết</h4>
+                <h3>🏆 Bảng thành tích chi tiết</h3>
                 <table className="score-table">
                   <thead>
                     <tr><th>Kỳ thi</th><th>Hạng mục</th><th>Kết quả</th></tr>
@@ -480,8 +482,8 @@ const LandingPage = () => {
                   <h3>Thông tin đăng ký học thử</h3>
                   <div className="form-row-2">
                     <div className="input-group">
-                      <label>Họ và tên *</label>
-                      <input name="student_name" type="text" className="form-control" required placeholder="Nguyễn Văn A" 
+                      <label htmlFor="student-name">Họ và tên *</label>
+                      <input id="student-name" name="student_name" type="text" autoComplete="name" className="form-control" required placeholder="Nguyễn Văn A"
                         onChange={(e) => {
                           const hiddenFromName = document.getElementById('hidden_from_name');
                           if (hiddenFromName) hiddenFromName.value = e.target.value;
@@ -490,18 +492,18 @@ const LandingPage = () => {
                       <input type="hidden" name="from_name" id="hidden_from_name" />
                     </div>
                     <div className="input-group">
-                      <label>Số điện thoại (Zalo) *</label>
-                      <input name="phone" type="tel" className="form-control" required placeholder="0901 234 567" />
+                      <label htmlFor="student-phone">Số điện thoại (Zalo) *</label>
+                      <input id="student-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" className="form-control" required placeholder="0901 234 567" />
                     </div>
                   </div>
                   <div className="input-group">
-                    <label>Email</label>
-                    <input name="email" type="email" className="form-control" placeholder="email@gmail.com" />
+                    <label htmlFor="student-email">Email</label>
+                    <input id="student-email" name="email" type="email" inputMode="email" autoComplete="email" spellCheck="false" className="form-control" placeholder="email@gmail.com" />
                   </div>
                   <div className="input-group">
-                    <label>Khóa học quan tâm *</label>
-                    <select name="course" className="form-control" required>
-                      <option value="">-- Chọn khóa học --</option>
+                    <label htmlFor="student-course">Khóa học quan tâm *</label>
+                    <select id="student-course" name="course" className="form-control" required>
+                      <option value="">Chọn khóa học…</option>
                       {courseList.map(c => (
                         <option key={c.id} value={c.title}>{c.title}</option>
                       ))}
@@ -509,12 +511,12 @@ const LandingPage = () => {
                     </select>
                   </div>
                   <div className="input-group">
-                    <label>Ghi chú thêm</label>
-                    <textarea name="user_message" className="form-control" rows="3"
-                      placeholder="Mục tiêu điểm số, khó khăn hiện tại, thời gian rảnh..." />
+                    <label htmlFor="student-message">Ghi chú thêm</label>
+                    <textarea id="student-message" name="user_message" className="form-control" rows="3"
+                      placeholder="Mục tiêu điểm số, khó khăn hiện tại, thời gian rảnh…" />
                   </div>
                   <button type="submit" className="btn btn-primary submit-btn-full" disabled={isSubmitting}>
-                    {isSubmitting ? '⏳ Đang gửi...' : '🚀 Gửi đăng ký'}
+                    {isSubmitting ? '⏳ Đang gửi…' : '🚀 Gửi đăng ký'}
                   </button>
                   <p className="form-privacy">🔒 Thông tin được bảo mật, chỉ dùng để liên hệ học tập.</p>
                 </form>
@@ -523,6 +525,7 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+      </main>
 
       {/* ═══ FOOTER ═══ */}
       <footer className="footer">

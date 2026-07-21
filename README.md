@@ -278,7 +278,7 @@ Thay đổi học viên, quyền, khóa học và đề thi trong trang Admin đ
 - Database: Supabase PostgreSQL.
 - Authorization: PostgreSQL Row Level Security.
 - Admin user management: Supabase Edge Function `admin-users`.
-- Migration: `supabase/migrations/001_initial_schema.sql`.
+- Migration: chạy lần lượt `supabase/migrations/001_initial_schema.sql`, rồi `supabase/migrations/002_exam_privacy_and_progress.sql`.
 - Hướng dẫn thiết lập kỹ thuật: [SUPABASE_SETUP.md](./SUPABASE_SETUP.md).
 
 Các biến công khai dùng khi build:

@@ -178,7 +178,7 @@
   border: 1px solid rgba(255,255,255,0.8);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s, border-color 0.4s, box-shadow 0.4s;
   position: relative;
   cursor: pointer;
   display: flex;
@@ -359,7 +359,7 @@
   padding: var(--space-2) 0;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
   background: rgba(255,255,255,0.4);
   border: 1px solid transparent;
 }
@@ -379,7 +379,7 @@
   color: var(--gray-500);
 }
 
-.week-day.today .week-day-label { color: rgba(255,255,255,0.8); }
+.week-day.today .week-day-label { color: #fff; }
 
 .week-day-num {
   font-size: var(--font-size-base);

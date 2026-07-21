@@ -42,7 +42,7 @@ export default function ExamPractice({ onBackToDashboard }) {
   useEffect(() => {
     apiFetch('/exams')
       .then(res => res.json())
-      .then(data => setExams(data))
+      .then(data => setExams(Array.isArray(data) ? data : []))
       .catch(err => console.error("Error loading exams:", err));
   }, []);
 
@@ -234,12 +234,12 @@ export default function ExamPractice({ onBackToDashboard }) {
               <button aria-label="Quay lại Dashboard" className="topbar-btn" onClick={onBackToDashboard} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
               </button>
-              <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
+              <img src="./logo.jpg" alt="" width="28" height="28" className="logo-icon" style={{ borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
               <span style={{ fontWeight: 800, fontSize: '1.1rem', background: 'linear-gradient(135deg, var(--primary-600), var(--primary-400))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Toán Thầy Triều</span>
             </div>
             
             <div className="nav-links" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-              <span role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onBackToDashboard()} className="nav-link-item" onClick={onBackToDashboard} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
+              <button type="button" className="nav-link-item" onClick={onBackToDashboard} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</button>
             </div>
 
             <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -248,20 +248,23 @@ export default function ExamPractice({ onBackToDashboard }) {
         </div>
         <div className="exam-practice-container list-view">
           <div className="exam-header-bar">
-             <h2 style={{ margin: 0 }}>Danh sách Đề thi</h2>
+             <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Danh sách đề thi</h1>
           </div>
         
         <div className="exam-grid">
-          {exams.map(exam => (
+          {exams.map(exam => {
+            const hasContent = Boolean(exam.data || exam.markdownContent || exam.fileUrl);
+            return (
             <div key={exam.id} className="exam-card">
               <div className="exam-card-content">
-                 <h3>{exam.title.replace(/-/g, ' ')}</h3>
+                 <h2>{exam.title.replace(/-/g, ' ')}</h2>
                  <p>Thời gian: {exam.time || 90} phút</p>
                  <p>Cấu trúc: {exam.data ? `${exam.data.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${exam.data.part2_trueFalse?.length || 0} câu đúng/sai, ${exam.data.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
-                 <button className="btn-primary" onClick={() => startExam(exam)}>Bắt đầu làm bài</button>
+                 <button className="btn-primary" disabled={!hasContent} onClick={() => startExam(exam)}>{hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
               </div>
             </div>
-          ))}
+            );
+          })}
           {exams.length === 0 && <p className="text-muted">Chưa có đề thi nào. Hãy thêm file .md vào thư mục exams.</p>}
         </div>
       </div>
@@ -281,7 +284,7 @@ export default function ExamPractice({ onBackToDashboard }) {
             <button aria-label="Quay lại danh sách đề" className="topbar-btn" onClick={handleBackToList} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-            <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
+            <img src="./logo.jpg" alt="" width="28" height="28" className="logo-icon" style={{ borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
             <span style={{ fontWeight: 800, fontSize: '1.1rem', background: 'linear-gradient(135deg, var(--primary-600), var(--primary-400))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: '16px' }}>Toán Thầy Triều</span>
               <span style={{ fontSize: '0.9rem', color: 'var(--gray-500)', fontWeight: 600, borderLeft: '1px solid rgba(0,0,0,0.1)', paddingLeft: '16px', WebkitTextFillColor: 'var(--gray-700)' }}>
@@ -291,7 +294,7 @@ export default function ExamPractice({ onBackToDashboard }) {
           </div>
 
           <div className="nav-links" style={{ display: 'flex', gap: '0.5rem', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-            <span role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && handleBackToList()} className="nav-link-item" onClick={handleBackToList} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</span>
+            <button type="button" className="nav-link-item" onClick={handleBackToList} style={{ cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, padding: '8px 16px', borderRadius: 'var(--radius-full)', color: 'var(--primary-600)', background: 'rgba(255,255,255,0.65)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9), 0 2px 10px rgba(80,100,200,0.12)' }}>Tổng quan học tập</button>
           </div>
 
           <div className="topbar-actions header-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -443,7 +446,10 @@ export default function ExamPractice({ onBackToDashboard }) {
                     <div className="short-answer-input">
                       <input 
                         type="text" 
-                        placeholder="Nhập đáp án..."
+                        aria-label={`Đáp án câu ${idx + 1}`}
+                        inputMode="decimal"
+                        autoComplete="off"
+                        placeholder="Nhập đáp án…"
                         value={userAns}
                         onChange={(e) => handlePart3Change(q.id, e.target.value)}
                         disabled={view === 'result'}

@@ -23,13 +23,16 @@ const CoursePage = () => {
     if (!user || !getToken()) { navigate('/login'); return; }
     Promise.all([
       apiFetch(`/courses/${id || '1'}`).then(r => { if (!r.ok) throw new Error('forbidden'); return r.json(); }),
-      apiFetch('/courses').then(r => r.json())
+      apiFetch('/courses').then(async r => {
+        const data = await r.json();
+        if (!r.ok || !Array.isArray(data)) throw new Error(data?.error || 'Không tải được danh sách khóa học');
+        return data;
+      })
     ])
     .then(([courseData, courseList]) => {
       setDummyCourseData(courseData);
       setRegisteredCoursesList(courseList);
       setIsLoading(false);
-      navigate('/dashboard', { replace: true });
     })
     .catch(err => {
       console.error(err);
@@ -132,7 +135,7 @@ const CoursePage = () => {
     return (
       <div className="couyen-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--gray-50)' }}>
         <div style={{ padding: '24px 40px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(10px)', borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ color: 'var(--primary-600)', margin: 0 }}>Đang tải dữ liệu khóa học...</h3>
+          <h1 style={{ color: 'var(--primary-600)', margin: 0, fontSize: '1.25rem' }}>Đang tải dữ liệu khóa học…</h1>
         </div>
       </div>
     );
@@ -142,7 +145,7 @@ const CoursePage = () => {
     return (
       <div className="couyen-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--gray-50)' }}>
         <div style={{ padding: '24px 40px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(10px)', borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ color: 'var(--danger-500)', margin: 0 }}>Không tìm thấy khóa học!</h3>
+          <h1 style={{ color: 'var(--danger-500)', margin: 0, fontSize: '1.25rem' }}>Không thể mở khóa học</h1>
           <button className="btn-primary mt-3" onClick={() => navigate('/dashboard')}>Quay lại Dashboard</button>
         </div>
       </div>
@@ -199,7 +202,7 @@ const CoursePage = () => {
           <div className="course-layout">
 
             {/* Sidebar TOC */}
-            <div className={`course-sidebar ${isSidebarOpen ? 'open' : ''}`}>
+            <div id="course-table-of-contents" className={`course-sidebar ${isSidebarOpen ? 'open' : ''}`}>
               <div className="course-sidebar-header">
                 <h2 className="course-sidebar-title">Mục lục khóa học</h2>
                 <div className="course-overall-progress">
@@ -239,7 +242,7 @@ const CoursePage = () => {
                             fontSize: '0.84rem',
                             border: isCurrent ? '1px solid rgba(0, 102, 204, 0.35)' : '1px solid rgba(255, 255, 255, 0.6)',
                             boxShadow: isCurrent ? '0 4px 12px rgba(0,102,204,0.1), inset 0 1px 1px rgba(255,255,255,1)' : 'none',
-                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                            transition: 'background 0.2s, color 0.2s, box-shadow 0.2s'
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
@@ -261,7 +264,7 @@ const CoursePage = () => {
                   const isOpen = expandedSections[section.id] !== false;
                   return (
                   <div key={section.id} className={`toc-section ${isOpen ? 'open' : ''}`}>
-                    <div className="toc-section-header" onClick={() => handleToggleSection(section.id)}>
+                    <button type="button" className="toc-section-header" aria-expanded={isOpen} onClick={() => handleToggleSection(section.id)}>
                       <div className="toc-section-info">
                         <div className="toc-section-title">Chương {idx + 1}: {section.title}</div>
                         <div className="toc-section-meta">{section.items.length} bài học • {section.duration}</div>
@@ -269,7 +272,7 @@ const CoursePage = () => {
                       <div className="toc-section-toggle">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s ease' }}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path></svg>
                       </div>
-                    </div>
+                    </button>
 
                     {isOpen && (
                     <div className="toc-list">
@@ -277,7 +280,8 @@ const CoursePage = () => {
                         const isActive = currentItem?.id === item.id;
                         const isCompleted = completedItems.has(item.id);
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={item.id}
                             className={`toc-item ${isActive ? 'active' : ''}`}
                             onClick={() => handleSelectItem(item)}
@@ -295,7 +299,7 @@ const CoursePage = () => {
                               <div className="toc-item-title">{item.title}</div>
                               <div className="toc-item-duration">{item.duration}</div>
                             </div>
-                          </div>
+                          </button>
                         )
                       })}
                     </div>
@@ -307,7 +311,7 @@ const CoursePage = () => {
             </div>
 
             {/* Mobile Overlay */}
-            <div className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
+            <button type="button" aria-label="Đóng mục lục" tabIndex={isSidebarOpen ? 0 : -1} className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`} onClick={() => setIsSidebarOpen(false)}></button>
 
             {/* Main Area — topbar lives here so it only spans this column */}
             <div className="course-main">
@@ -316,16 +320,16 @@ const CoursePage = () => {
               <div className="topbar-wrapper">
                 <header className="topbar">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button onClick={handleGoBack} className="topbar-nav-btn" title="Quay lại page trước" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', color: '#636366', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.04)', transition: 'all 0.2s ease' }}>
+                    <button onClick={handleGoBack} className="topbar-nav-btn" aria-label="Quay lại" title="Quay lại" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', color: '#636366', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.04)', transition: 'background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s' }}>
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: 18, height: 18, strokeWidth: 2.5 }}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     </button>
-                    <button onClick={handleGoForward} className="topbar-nav-btn" title="Tiến tới page tiếp theo" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', color: '#636366', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.04)', transition: 'all 0.2s ease' }}>
+                    <button onClick={handleGoForward} className="topbar-nav-btn" aria-label="Tiến tới" title="Tiến tới" style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', color: '#636366', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.04)', transition: 'background 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s' }}>
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: 18, height: 18, strokeWidth: 2.5 }}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#2C2C2E', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>{dummyCourseData.title}</div>
+                  <div className="course-topbar-title" style={{ fontWeight: 700, fontSize: '0.92rem', color: '#2C2C2E', letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>{dummyCourseData.title}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.9)', borderRadius: '9999px', padding: '8px 14px', color: '#636366', fontWeight: 600, fontSize: '0.85rem', display: 'none', alignItems: 'center', gap: 6, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} className="mobile-toc-toggle">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} aria-expanded={isSidebarOpen} aria-controls="course-table-of-contents" className="mobile-toc-toggle">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16, strokeWidth: 2.5 }}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                       Bài học
                     </button>
@@ -358,7 +362,7 @@ const CoursePage = () => {
                                 return newSet;
                               });
                             }}
-                            style={{ background: '#34c759', color: '#fff', border: 'none', padding: '5px 14px', borderRadius: '20px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: '0 2px 6px rgba(52,199,89,0.3)', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            style={{ background: '#137a3f', color: '#fff', border: 'none', padding: '5px 14px', borderRadius: '20px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', boxShadow: '0 2px 6px rgba(19,122,63,0.28)', transition: 'transform 0.2s, box-shadow 0.2s', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
                             ✓ Hoàn thành ngay
                           </button>
@@ -374,7 +378,7 @@ const CoursePage = () => {
                   <>
                     <div className="course-hero">
                       <div className="course-cover-banner" style={{ borderRadius: '15px', overflow: 'hidden', boxShadow: '0 8px 28px rgba(0, 102, 204, 0.15), 0 2px 8px rgba(0,0,0,0.06)', border: '1px solid rgba(255, 255, 255, 0.8)', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)' }}>
-                        <img src="./1783264418835_6184149828822151336_6184149828822151336_3208d6bfda3f1da2241a23a53a628ada.jpg" alt="Course Cover" style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', objectPosition: 'center', display: 'block', transition: 'transform 0.4s ease' }} />
+                        <img src="./1783264418835_6184149828822151336_6184149828822151336_3208d6bfda3f1da2241a23a53a628ada.jpg" alt={`Ảnh bìa khóa học ${dummyCourseData.title}`} width="1200" height="675" style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', objectPosition: 'center', display: 'block', transition: 'transform 0.4s ease' }} />
                       </div>
                     </div>
                     
@@ -389,16 +393,16 @@ const CoursePage = () => {
                           const isOpen = expandedSections[section.id] !== false;
                           return (
                           <div key={section.id} className={`ch-section ${isOpen ? 'open' : ''}`}>
-                            <div className="ch-section-header" onClick={() => handleToggleSection(section.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}>
+                            <button type="button" className="ch-section-header" aria-expanded={isOpen} onClick={() => handleToggleSection(section.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', userSelect: 'none' }}>
                               <span>Tuần {idx + 1} – {section.title}</span>
                               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: 16, height: 16, strokeWidth: 2.5, color: '#636366', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s ease' }}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
+                            </button>
                             {isOpen && (
                             <div className="ch-list">
                               {section.items.map(item => {
                                 const isCompleted = completedItems.has(item.id);
                                 return (
-                                  <div key={item.id} className="ch-item" onClick={() => handleSelectItem(item)}>
+                                  <button type="button" key={item.id} className="ch-item" onClick={() => handleSelectItem(item)}>
                                     <div className={`ch-item-icon ${isCompleted ? 'completed' : 'pending'}`}>
                                       {isCompleted ? (
                                         <svg fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
@@ -415,7 +419,7 @@ const CoursePage = () => {
                                     <div className="ch-item-action">
                                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                                     </div>
-                                  </div>
+                                  </button>
                                 );
                               })}
                             </div>

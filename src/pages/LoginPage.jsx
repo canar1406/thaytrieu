@@ -17,6 +17,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // Page fade in
     gsap.fromTo(containerRef.current, 
       { opacity: 0 }, 
@@ -71,12 +72,12 @@ const LoginPage = () => {
   return (
     <div className="lp-root login-page-root" ref={containerRef}>
       {/* ═══ ANIMATED BLOBS ═══ */}
-      <div className="blob blob-1" />
-      <div className="blob blob-2" />
-      <div className="blob blob-3" />
+      <div className="blob blob-1" aria-hidden="true" />
+      <div className="blob blob-2" aria-hidden="true" />
+      <div className="blob blob-3" aria-hidden="true" />
       
       {/* ═══ MATH BACKGROUND ═══ */}
-      <div className="math-bg-container">
+      <div className="math-bg-container" aria-hidden="true">
         {/* Simple Symbols */}
         <span className="math-sym sym-1">∫</span>
         <span className="math-sym sym-2">∑</span>
@@ -99,21 +100,26 @@ const LoginPage = () => {
         <span className="math-formula form-7">∮ E·dA = Q/ε₀</span>
       </div>
 
-      <div className="login-center-wrapper">
+      <main className="login-center-wrapper">
         <div className="login-box" ref={formRef}>
           <div className="login-brand-centered">
-            <img src="./logo.jpg" alt="Logo" className="login-logo-img" />
-            <h2>Đăng Nhập</h2>
+            <img src="./logo.jpg" alt="" width="64" height="64" className="login-logo-img" />
+            <h1>Đăng nhập</h1>
             <p>Hệ thống quản lý học tập cá nhân hóa</p>
           </div>
           
-          {error && <div className="error-msg">{error}</div>}
+          {error && <div className="error-msg" role="alert" aria-live="assertive">{error}</div>}
           
           <form onSubmit={handleLogin}>
             <div className="input-group">
-              <label>Email</label>
+              <label htmlFor="login-email">Email</label>
               <input 
+                id="login-email"
+                name="email"
                 type="email" 
+                inputMode="email"
+                autoComplete="email"
+                spellCheck="false"
                 className="form-control" 
                 required 
                 value={email} 
@@ -122,9 +128,12 @@ const LoginPage = () => {
               />
             </div>
             <div className="input-group">
-              <label>Mật Khẩu</label>
+              <label htmlFor="login-password">Mật khẩu</label>
               <input 
+                id="login-password"
+                name="password"
                 type="password" 
+                autoComplete="current-password"
                 className="form-control" 
                 required 
                 value={password} 
@@ -139,12 +148,12 @@ const LoginPage = () => {
           
           <div className="login-footer-text">
             <span>Chưa có tài khoản? </span>
-            <span className="login-link" onClick={() => navigate('/')}>
+            <button type="button" className="login-link" onClick={() => navigate('/')}>
               Đăng ký ngay
-            </span>
+            </button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

@@ -61,6 +61,7 @@ const Dashboard = () => {
     apiFetch('/courses')
       .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) throw new Error(data?.error || 'Dữ liệu khóa học không hợp lệ');
         if (user.role !== 'admin') {
           const allowed = user.allowedCourses || [];
           setCourses(data.filter(c => allowed.includes(c.id)));
@@ -70,6 +71,7 @@ const Dashboard = () => {
       })
       .catch(err => console.error("Error loading courses:", err));
     apiFetch('/progress').then(r => r.ok ? r.json() : []).then(rows => {
+      if (!Array.isArray(rows)) rows = [];
       const counts = rows.reduce((acc, row) => ({ ...acc, [String(row.course_id)]: (acc[String(row.course_id)] || 0) + 1 }), {});
       setProgressByCourse(counts);
     });
@@ -77,11 +79,13 @@ const Dashboard = () => {
 
   const completedLessons = Object.values(progressByCourse).reduce((sum, count) => sum + count, 0);
   const totalLessonsAll = courses.reduce((sum, course) => sum + (course.totalLessons || 0), 0);
+  const remainingLessons = Math.max(0, totalLessonsAll - completedLessons);
+  const overallProgress = totalLessonsAll ? Math.min(100, Math.round((completedLessons / totalLessonsAll) * 100)) : 0;
   const chartData = {
     labels: ['Hoàn thành', 'Chưa học'],
     datasets: [
       {
-        data: [completedLessons, Math.max(0, totalLessonsAll - completedLessons)],
+        data: [completedLessons, remainingLessons],
         backgroundColor: ['#2451d1', '#f3f4f6'],
         borderWidth: 0,
         cutout: '75%',
@@ -115,20 +119,20 @@ const Dashboard = () => {
 
           <div className="sidebar-nav">
             <div className="nav-section-title">Học tập</div>
-            <div role="button" tabIndex={0} className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onKeyDown={e => e.key === 'Enter' && setActiveTab('overview')} onClick={() => setActiveTab('overview')} style={{ cursor: 'pointer' }}>
+            <button type="button" className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
               <span>Tổng quan</span>
-            </div>
+            </button>
             <div className="nav-item-dropdown">
-              <div role="button" tabIndex={0} aria-expanded={showCourseMenu} className="nav-item" onKeyDown={e => e.key === 'Enter' && setShowCourseMenu(!showCourseMenu)} onClick={() => setShowCourseMenu(!showCourseMenu)} style={{ justifyContent: 'space-between' }}>
+              <button type="button" aria-expanded={showCourseMenu} aria-controls="dashboard-course-menu" className="nav-item" onClick={() => setShowCourseMenu(!showCourseMenu)} style={{ justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                   <span>Khóa học</span>
                 </div>
                 <svg style={{ transform: showCourseMenu ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', width: 14, height: 14 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
+              </button>
               {showCourseMenu && (
-                <div className="nav-sublist">
+                <div className="nav-sublist" id="dashboard-course-menu">
                   {courses.map(course => (
                     <Link key={course.id} to={`/course/${course.id}`} className="nav-subitem">
                       {course.title}
@@ -137,20 +141,20 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-            <div role="button" tabIndex={0} className={`nav-item ${activeTab === 'practice' ? 'active' : ''}`} onKeyDown={e => e.key === 'Enter' && setActiveTab('practice')} onClick={() => setActiveTab('practice')} style={{ cursor: 'pointer' }}>
+            <button type="button" className={`nav-item ${activeTab === 'practice' ? 'active' : ''}`} onClick={() => setActiveTab('practice')}>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               <span>Luyện đề</span>
-            </div>
+            </button>
           </div>
 
           <div className="sidebar-footer">
-            <div role="button" tabIndex={0} aria-label="Đăng xuất" className="user-card" onKeyDown={e => e.key === 'Enter' && handleLogout()} onClick={handleLogout}>
+            <button type="button" aria-label={`Đăng xuất tài khoản ${user.name}`} className="user-card" onClick={handleLogout}>
               <div className="user-avatar">{user.name.charAt(0)}</div>
               <div className="user-info">
                 <div className="user-name">{user.name}</div>
                 <div className="user-role">Học sinh</div>
               </div>
-            </div>
+            </button>
           </div>
         </aside>
 
@@ -161,7 +165,7 @@ const Dashboard = () => {
             <div className="topbar-wrapper">
               <header className="topbar">
               <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <img src="./logo.jpg" alt="Toán Thầy Triều" className="logo-icon" style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
+                <img src="./logo.jpg" alt="" width="28" height="28" className="logo-icon" style={{ borderRadius: '6px', objectFit: 'cover', boxShadow: '0 2px 8px rgba(59,110,244,0.15)' }} />
                 <span style={{ fontWeight: 800, fontSize: '1.1rem', background: 'linear-gradient(135deg, var(--primary-600), var(--primary-400))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Toán Thầy Triều</span>
               </div>
               
@@ -236,7 +240,6 @@ const Dashboard = () => {
               <div className="courses-section">
                 <div className="section-header-row">
                   <h3 className="section-heading">Khóa học của tôi</h3>
-                  <button className="btn btn-ghost btn-sm">Xem tất cả</button>
                 </div>
                 <div className="courses-scroll">
                   {courses.map(course => {
@@ -245,7 +248,7 @@ const Dashboard = () => {
                     const progress = totalLessons ? Math.min(100, Math.round(((progressByCourse[String(course.id)] || 0) / totalLessons) * 100)) : 0;
                     
                     return (
-                    <div role="link" tabIndex={0} className="course-card" key={course.id} onKeyDown={e => e.key === 'Enter' && navigate(`/course/${course.id}`)} onClick={() => navigate(`/course/${course.id}`)}>
+                    <Link className="course-card" key={course.id} to={`/course/${course.id}`} aria-label={`Vào học khóa ${course.title}`}>
                       <div className="course-thumbnail">
                         <span className="course-thumb-icon">📐</span>
                         {progress === 100 ? (
@@ -277,10 +280,10 @@ const Dashboard = () => {
                             <div className="teacher-tag-avatar">T</div>
                             <span>Thầy Triều</span>
                           </div>
-                          <button className="btn btn-outline btn-sm">Vào học</button>
+                          <span className="btn btn-outline btn-sm" aria-hidden="true">Vào học</span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                     );
                   })}
                 </div>
@@ -355,9 +358,14 @@ const Dashboard = () => {
                   </div>
                   <div className="card-body progress-chart">
                     <div className="chart-container">
-                      <Doughnut data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }} />
+                      <Doughnut
+                        data={chartData}
+                        aria-label={`Tiến độ học tập: đã hoàn thành ${completedLessons} trên ${totalLessonsAll} bài`}
+                        role="img"
+                        options={{ maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }}
+                      />
                       <div className="chart-center-text">
-                        <div className="chart-percent">37%</div>
+                        <div className="chart-percent">{overallProgress}%</div>
                         <div className="chart-label">Tổng bài học</div>
                       </div>
                     </div>
@@ -367,14 +375,14 @@ const Dashboard = () => {
                           <div className="legend-dot" style={{ background: '#2451d1' }}></div>
                           <span>Hoàn thành</span>
                         </div>
-                        <div className="legend-val">15 bài</div>
+                        <div className="legend-val">{completedLessons} bài</div>
                       </div>
                       <div className="legend-row">
                         <div className="legend-dot-label">
                           <div className="legend-dot" style={{ background: '#f3f4f6' }}></div>
                           <span>Chưa học</span>
                         </div>
-                        <div className="legend-val">25 bài</div>
+                        <div className="legend-val">{remainingLessons} bài</div>
                       </div>
                     </div>
                   </div>

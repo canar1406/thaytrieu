@@ -46,6 +46,7 @@ const AdminDashboard = () => {
       const data = await res.json();
       if (data.success && data.user?.role === 'admin') {
         sessionStorage.setItem('authToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         setIsAdmin(true);
         loadUsers();
         loadCourses();
@@ -54,7 +55,7 @@ const AdminDashboard = () => {
         setErrorMsg(data.message || 'Lỗi đăng nhập');
       }
     } catch {
-      setErrorMsg('Không thể kết nối đến Local Server. Hãy chắc chắn bạn đã chạy file start-admin.bat');
+      setErrorMsg('Không thể kết nối đến Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
     }
   };
 
@@ -62,7 +63,7 @@ const AdminDashboard = () => {
     try {
       const res = await apiFetch(`/users`);
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (e) { console.error(e); }
   };
 
@@ -70,7 +71,7 @@ const AdminDashboard = () => {
     try {
       const res = await apiFetch(`/courses`);
       const data = await res.json();
-      setCourses(data);
+      setCourses(Array.isArray(data) ? data : []);
     } catch (e) { console.error(e); }
   };
 
@@ -78,7 +79,7 @@ const AdminDashboard = () => {
     try {
       const res = await apiFetch(`/exams`);
       const data = await res.json();
-      setExams(data);
+      setExams(Array.isArray(data) ? data : []);
     } catch (e) { console.error(e); }
   };
 
@@ -274,7 +275,7 @@ const AdminDashboard = () => {
         </nav>
         <div className="admin-sidebar-foot">
           <div className="admin-system-status"><i aria-hidden="true" /><span><strong>Supabase</strong><small>Đã kết nối an toàn</small></span></div>
-          <button className="admin-logout" onClick={async () => { await apiFetch('/logout', { method: 'POST' }); setIsAdmin(false); }}><span aria-hidden="true">↪</span>Đăng xuất</button>
+          <button className="admin-logout" onClick={async () => { await apiFetch('/logout', { method: 'POST' }); localStorage.removeItem('user'); sessionStorage.removeItem('authToken'); setIsAdmin(false); }}><span aria-hidden="true">↪</span>Đăng xuất</button>
         </div>
       </aside>
 
