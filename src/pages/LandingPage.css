@@ -617,14 +617,47 @@
   .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; padding-top: 2rem; }
   .hero-right { order: -1; }
   .teacher-portrait-card { max-width: 360px; }
-  .teacher-layout { grid-template-columns: 1fr; gap: 3rem; }
-  .register-grid  { grid-template-columns: 1fr; gap: 3rem; }
-  .courses-grid   { grid-template-columns: repeat(2,1fr); }
+  .teacher-layout { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+  .teacher-layout > *, .teacher-right-panel { min-width: 0; }
+  .register-grid  { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
+  .courses-grid   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
+  .lp-root .container { width: 100%; padding-right: 18px; padding-left: 18px; }
   .nav-links  { display: none; }
+  .navbar { padding: 8px 0; }
+  .navbar-inner { height: 54px; padding: 0 6px 0 12px; }
+  .nav-logo { min-width: 0; gap: 7px; font-size: 0.9rem; }
+  .nav-logo span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .navbar-inner .btn { padding: 10px 14px; font-size: 0.8rem; white-space: nowrap; }
+  .hero-grid, .hero-left, .hero-right, .teacher-layout, .teacher-layout > *, .teacher-right-panel { width: 100%; min-width: 0; }
+  .teacher-portrait-card { width: 100%; max-width: 100%; padding: 22px 26px; }
+  .card-badge-float { gap: 6px; padding: 7px 10px; }
+  .card-badge-float .badge-label { font-size: 0.68rem; }
+  .card-badge-float .badge-label span { font-size: 0.59rem; }
+  .badge-top-right { top: 4px; right: 4px; }
+  .badge-mid-left { left: 4px; }
+  .badge-bottom-right { right: 4px; bottom: 38px; }
   .courses-grid { grid-template-columns: 1fr; }
   .commit-grid  { grid-template-columns: 1fr; }
   .form-row-2   { grid-template-columns: 1fr; }
   .hero-stats   { flex-direction: column; align-items: flex-start; }
+  .timeline { width: 100%; min-width: 0; padding-left: 28px; }
+  .timeline::before { left: 10px; }
+  .tl-year-group, .tl-items { width: 100%; min-width: 0; }
+  .tl-year::before { left: -23px; }
+  .tl-item {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    gap: 0.7rem;
+    padding: 0.9rem;
+  }
+  .tl-item > span:last-child { min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
+  .tl-item:hover { transform: none; }
+  .radar-card, .score-glass { min-width: 0; padding: 1rem; border-radius: var(--r-md); }
+  .score-table { table-layout: fixed; font-size: 0.73rem; }
+  .score-table th, .score-table td { padding: 7px 5px; overflow-wrap: anywhere; }
+  .form-box { padding: 1.25rem; }
 }
