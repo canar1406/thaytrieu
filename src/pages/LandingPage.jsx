@@ -17,6 +17,77 @@ ChartJS.register(
 );
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+const TIMELINE = [
+  {
+    year: '2023',
+    items: [
+      { icon: '🥇', text: <><strong>Thủ khoa</strong> đầu vào Chuyên Toán Long An (10đ Toán thường, 8đ Toán chuyên)</> },
+    ],
+  },
+  {
+    year: '2024',
+    items: [
+      { icon: '🥈', text: <><strong>Giải Nhì</strong> kỳ thi HSG cấp Tỉnh Long An</> },
+      { icon: '🥉', text: <><strong>Huy chương Đồng</strong> Olympic 30/4 khu vực miền Nam</> },
+      { icon: '🏟️', text: <>Tham gia <strong>Đội tuyển HSG Quốc Gia</strong> môn Toán</> },
+    ],
+  },
+  {
+    year: '2025',
+    items: [
+      { icon: '🥈', text: <><strong>Giải Nhì</strong> HSG cấp Tỉnh Long An</> },
+      { icon: '🥇', text: <><strong>Giải Nhất</strong> Olympic Miền Trung – Tây Nguyên mở rộng</> },
+      { icon: '👑', text: <><strong>Thủ Khoa (39/40)</strong> kỳ thi chọn HSG dự thi Quốc Gia</> },
+      { icon: '🌏', text: <><strong>Giải Aluminium Compass</strong> – Kỳ thi Hình Học Quốc Tế Iran (IGO)</> },
+      { icon: '🏅', text: <><strong>Giải Ba</strong> kỳ thi HSG Quốc Gia môn Toán</> },
+      { icon: '🎓', text: <><strong>Tuyển thẳng</strong> ĐH Sư Phạm Hà Nội & ĐH Sư Phạm TP.HCM</> },
+      { icon: '📝', text: <><strong>9,5 điểm</strong> môn Toán kỳ thi Tốt nghiệp THPT Quốc Gia</> },
+    ],
+  },
+];
+
+const radarData = {
+  labels: ['Đại Số', 'Hình Học', 'Giải Tích', 'Tổ Hợp', 'Lượng Giác', 'Số Phức'],
+  datasets: [{
+    label: 'Năng lực giảng dạy',
+    data: [95, 98, 92, 90, 88, 85],
+    backgroundColor: 'rgba(59,110,244,0.12)',
+    borderColor: 'rgba(59,110,244,0.8)',
+    borderWidth: 2,
+    pointBackgroundColor: 'rgba(59,110,244,1)',
+    pointRadius: 4,
+    pointHoverRadius: 6,
+  }],
+};
+
+const radarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    r: {
+      min: 60,
+      max: 100,
+      ticks: { display: false, stepSize: 10 },
+      grid: { color: 'rgba(99,113,183,0.15)' },
+      angleLines: { color: 'rgba(99,113,183,0.12)' },
+      pointLabels: { font: { size: 11, family: 'Inter', weight: '600' }, color: '#374151' },
+    },
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      titleColor: '#111827',
+      bodyColor: '#374151',
+      borderColor: 'rgba(59,110,244,0.2)',
+      borderWidth: 1,
+      cornerRadius: 10,
+      padding: 10,
+      callbacks: { label: context => ` ${context.raw}/100` },
+    },
+  },
+};
+
 /* ────────────────────────── COMPONENT ────────────────────────── */
 const LandingPage = () => {
   const rootRef = useRef(null);
@@ -290,13 +361,14 @@ const LandingPage = () => {
             <p>Chương trình bám sát cấu trúc đề thi THPT Quốc Gia và HSG, đảm bảo nắm vững lý thuyết và thành thạo kỹ năng làm bài.</p>
           </div>
           <div className="courses-grid sr-stagger">
-            {COURSES.map((c, i) => (
-              <div key={i} className="course-card sr-child">
-                <div className="course-card-icon">{c.icon}</div>
+            {courseList.map((c, i) => (
+              <div key={c.id} className="course-card sr-child">
+                <div className="course-card-icon" aria-hidden="true">{['📐', '🔷', '🎯', '📊'][i % 4]}</div>
                 <h4>{c.title}</h4>
-                <p>{c.desc}</p>
+                <p>{c.description || 'Lộ trình học được xây dựng từ nền tảng đến nâng cao, bám sát mục tiêu của học viên.'}</p>
               </div>
             ))}
+            {courseList.length === 0 && <p className="courses-empty" role="status">Danh sách khóa học đang được cập nhật.</p>}
           </div>
         </div>
       </section>
