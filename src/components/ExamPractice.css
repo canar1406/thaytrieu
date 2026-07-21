@@ -69,7 +69,11 @@
   margin-top: 12px;
   width: 100%;
   padding: 10px;
+  color: #fff;
+  background: #2451d1;
 }
+
+.exam-card .btn-primary:hover { background: #1d43b3; }
 
 /* EXAM VIEW */
 .exam-sticky-header {
