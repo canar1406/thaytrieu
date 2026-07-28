@@ -497,6 +497,84 @@
   text-align: center;
 }
 
+.exam-progress-panel {
+  padding: 14px 17px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 14px;
+  background: rgba(255,255,255,.62);
+  box-shadow: 0 5px 18px rgba(53,73,120,.06);
+}
+
+.exam-progress-panel > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #667085;
+  font-size: .72rem;
+}
+
+.exam-progress-panel strong { color: #344054; }
+.exam-progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: #e4e9f2; }
+.exam-progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#2451d1,#4da3ff); transition: width .25s ease; }
+
+.exam-instructions {
+  padding: 11px 15px;
+  margin-bottom: 14px;
+  border: 1px solid #c9d6ff;
+  border-radius: 12px;
+  color: #344c91;
+  background: rgba(246,248,255,.88);
+  font-size: .78rem;
+}
+
+.exam-question-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #e3e7ee;
+}
+
+.exam-question-navigation button {
+  min-width: 120px;
+  padding: 10px 15px;
+  border: 1px solid #d6dce7;
+  border-radius: 10px;
+  color: #475467;
+  background: #fff;
+  font-weight: 700;
+}
+
+.exam-question-navigation button:disabled { opacity: .45; cursor: not-allowed; }
+.exam-question-navigation button.next, .exam-question-navigation button.submit { color: #fff; border-color: #2451d1; background: #2451d1; }
+.exam-question-navigation > span { color: #667085; font-size: .78rem; font-weight: 700; }
+
+.exam-submitted-card {
+  display: grid;
+  min-height: 420px;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.exam-submitted-card > span {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #22a06b;
+  box-shadow: 0 12px 30px rgba(34,160,107,.25);
+  font-size: 1.8rem;
+}
+
+.exam-submitted-card h2 { margin: 18px 0 5px; }
+.exam-submitted-card p { max-width: 420px; margin: 0 0 20px; color: #667085; }
+
 @media (max-width: 1100px) {
   .exam-layout {
     grid-template-columns: minmax(0, 1fr) 230px;
@@ -551,4 +629,8 @@
   .stmt-actions { width: 100%; }
   .tf-btn { flex: 1; min-height: 42px; }
   .short-answer-input input { max-width: none; }
+  .exam-progress-panel > div:first-child { flex-direction: column; gap: 2px; }
+  .exam-question-navigation { flex-wrap: wrap; }
+  .exam-question-navigation > span { width: 100%; order: -1; text-align: center; }
+  .exam-question-navigation button { min-width: 0; flex: 1; }
 }

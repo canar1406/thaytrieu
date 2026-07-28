@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -30,6 +30,43 @@ const normalizeExamData = source => {
 
 const hasInteractiveQuestions = hasExamQuestions;
 
+const DEFAULT_EXAM_SETTINGS = {
+  duration: 90,
+  passingScore: 5,
+  viewMode: 'all',
+  shuffleQuestions: false,
+  shuffleOptions: false,
+  showResult: true,
+  allowReview: true,
+  autoSave: true,
+  instructions: ''
+};
+
+const shuffled = items => {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index--) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+  }
+  return copy;
+};
+
+const prepareExamData = (source, settings) => {
+  const data = structuredClone(source);
+  if (settings.shuffleQuestions) {
+    data.part1_multipleChoice = shuffled(data.part1_multipleChoice || []);
+    data.part2_trueFalse = shuffled(data.part2_trueFalse || []);
+    data.part3_shortAnswer = shuffled(data.part3_shortAnswer || []);
+  }
+  if (settings.shuffleOptions) {
+    data.part1_multipleChoice = (data.part1_multipleChoice || []).map(question => ({
+      ...question,
+      options: shuffled(question.options || [])
+    }));
+  }
+  return data;
+};
+
 export default function ExamPractice({ onBackToDashboard, initialExams = null }) {
   const [exams, setExams] = useState(() => initialExams || []);
   const [isLoading, setIsLoading] = useState(!initialExams);
@@ -38,6 +75,8 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
   const [examError, setExamError] = useState('');
   const [view, setView] = useState('list'); // 'list', 'exam', 'result'
   const [selectedExam, setSelectedExam] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [saveStatus, setSaveStatus] = useState('');
   
   // State for exam mode
   const [userAnswers, setUserAnswers] = useState({ part1: {}, part2: {}, part3: {} });
@@ -58,6 +97,7 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
       const resultData = normalizeExamData(result.data);
       if (!hasInteractiveQuestions(resultData)) throw new Error('Máy chủ không trả về đáp án hợp lệ.');
       setSelectedExam(current => ({ ...current, data: resultData }));
+      localStorage.removeItem(`exam-progress:${selectedExam.id}`);
       setView('result');
     } catch (error) {
       setExamError(error.message || 'Không thể nộp bài. Vui lòng thử lại.');
@@ -96,19 +136,57 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
     return () => clearInterval(timerRef.current);
   }, [view, timeLeft, handleSubmitExam]);
 
+  const questionSequence = useMemo(() => {
+    const data = selectedExam?.data;
+    if (!data) return [];
+    return [
+      ...(data.part1_multipleChoice || []).map(question => ({ part: 'part1', question })),
+      ...(data.part2_trueFalse || []).map(question => ({ part: 'part2', question })),
+      ...(data.part3_shortAnswer || []).map(question => ({ part: 'part3', question }))
+    ];
+  }, [selectedExam?.data]);
+
+  const answeredCount = useMemo(() => questionSequence.filter(({ part, question }) => {
+    if (part === 'part1') return Boolean(userAnswers.part1[question.id]);
+    if (part === 'part2') return Object.keys(userAnswers.part2[question.id] || {}).length > 0;
+    return Boolean(userAnswers.part3[question.id]?.trim());
+  }).length, [questionSequence, userAnswers]);
+
+  useEffect(() => {
+    if (view !== 'exam' || !selectedExam?.id || selectedExam.settings?.autoSave === false) return;
+    const saveTimer = setTimeout(() => {
+      localStorage.setItem(`exam-progress:${selectedExam.id}`, JSON.stringify({
+        answers: userAnswers,
+        timeLeft,
+        savedAt: Date.now()
+      }));
+      setSaveStatus('Đã tự động lưu');
+    }, 350);
+    return () => clearTimeout(saveTimer);
+  }, [selectedExam?.id, selectedExam?.settings?.autoSave, timeLeft, userAnswers, view]);
+
   const [markdownContent, setMarkdownContent] = useState('');
 
   const startExam = async (exam) => {
     setIsStarting(exam.id);
     setExamError('');
-    setUserAnswers({ part1: {}, part2: {}, part3: {} });
-    setTimeLeft((Number(exam.time) || 90) * 60);
+    setSaveStatus('');
+    setCurrentQuestionIndex(0);
     setMarkdownContent('');
 
     try {
       const inlineData = normalizeExamData(exam.data);
       if (hasInteractiveQuestions(inlineData)) {
-        setSelectedExam({ ...exam, data: inlineData });
+        const settings = { ...DEFAULT_EXAM_SETTINGS, ...exam.settings, duration: Number(exam.settings?.duration || exam.time || 90) };
+        const progressKey = `exam-progress:${exam.id}`;
+        let savedProgress = null;
+        if (settings.autoSave) {
+          try { savedProgress = JSON.parse(localStorage.getItem(progressKey)); } catch { savedProgress = null; }
+        }
+        setUserAnswers(savedProgress?.answers || { part1: {}, part2: {}, part3: {} });
+        setTimeLeft(savedProgress?.timeLeft || settings.duration * 60);
+        setSelectedExam({ ...exam, settings, data: prepareExamData(inlineData, settings) });
+        if (savedProgress?.answers) setSaveStatus('Đã khôi phục bài làm gần nhất.');
         setView('exam');
       } else if (exam.markdownContent?.trim()) {
         const parsedMarkdown = parseExamMarkdown(exam.markdownContent);
@@ -150,6 +228,13 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
     setView('list');
     setSelectedExam(null);
     setExamError('');
+    setSaveStatus('');
+  };
+
+  const requestSubmitExam = () => {
+    const unanswered = Math.max(0, questionSequence.length - answeredCount);
+    if (unanswered > 0 && !confirm(`Bạn còn ${unanswered} câu chưa trả lời. Vẫn nộp bài?`)) return;
+    handleSubmitExam();
   };
 
   const formatTime = (seconds) => {
@@ -270,6 +355,13 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
   };
 
   const scrollToQuestion = (qId) => {
+    if (selectedExam?.settings?.viewMode === 'single' && view === 'exam') {
+      const index = questionSequence.findIndex(item => item.question.id === qId);
+      if (index >= 0 && (selectedExam.settings?.allowReview !== false || index >= currentQuestionIndex)) {
+        setCurrentQuestionIndex(index);
+      }
+      return;
+    }
     const el = document.getElementById(`question-${qId}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -317,7 +409,7 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
             <div key={exam.id} className="exam-card">
               <div className="exam-card-content">
                  <h2>{exam.title.replace(/-/g, ' ')}</h2>
-                 <p>Thời gian: {exam.time || 90} phút</p>
+                 <p>Thời gian: {exam.settings?.duration || exam.time || 90} phút</p>
                  <p>Cấu trúc: {needsMigration ? 'Đề cũ cần quản trị viên mở và lưu lại' : hasInteractiveQuestions(examData) ? `${examData.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${examData.part2_trueFalse?.length || 0} câu đúng/sai, ${examData.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.markdownContent ? 'Đề đọc dạng Markdown' : exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
                  <button type="button" className="btn-primary" disabled={!hasContent || Boolean(isStarting)} onClick={() => startExam(exam)}>{isStarting === exam.id ? 'Đang mở đề…' : needsMigration ? 'Cần cập nhật đề' : hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
               </div>
@@ -333,6 +425,12 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
 
   const data = selectedExam?.data || {};
   const isMarkdownOnly = !!markdownContent;
+  const settings = { ...DEFAULT_EXAM_SETTINGS, ...selectedExam?.settings };
+  const isSingleQuestion = view === 'exam' && settings.viewMode === 'single';
+  const activeQuestionId = questionSequence[currentQuestionIndex]?.question.id;
+  const showQuestion = question => !isSingleQuestion || question.id === activeQuestionId;
+  const hideDetailedResult = view === 'result' && settings.showResult === false;
+  const progressPercent = questionSequence.length ? Math.round((answeredCount / questionSequence.length) * 100) : 0;
 
   return (
     <>
@@ -364,9 +462,9 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
                </div>
              )}
              {view === 'exam' ? (
-               !isMarkdownOnly && <button className="btn-primary" disabled={isSubmitting} onClick={handleSubmitExam} style={{ margin: 0, padding: '8px 24px', borderRadius: 'var(--radius-full)' }}>{isSubmitting ? 'Đang nộp…' : 'Nộp bài'}</button>
+               !isMarkdownOnly && <button className="btn-primary" disabled={isSubmitting} onClick={requestSubmitExam} style={{ margin: 0, padding: '8px 24px', borderRadius: 'var(--radius-full)' }}>{isSubmitting ? 'Đang nộp…' : 'Nộp bài'}</button>
              ) : (
-               !isMarkdownOnly && <div className="score-badge" style={{ background: '#34c759', color: 'white', padding: '8px 20px', borderRadius: 'var(--radius-full)', fontWeight: 700, margin: 0, boxShadow: '0 4px 12px rgba(52, 199, 89, 0.3)' }}>Điểm: {calculateScore()}/10</div>
+               !isMarkdownOnly && !hideDetailedResult && <div className="score-badge" style={{ background: '#34c759', color: 'white', padding: '8px 20px', borderRadius: 'var(--radius-full)', fontWeight: 700, margin: 0, boxShadow: '0 4px 12px rgba(52, 199, 89, 0.3)' }}>Điểm: {calculateScore()}/10</div>
              )}
           </div>
         </header>
@@ -374,23 +472,38 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
 
       <div className={`exam-practice-container ${view}-view`}>
       {examError && <div className="exam-alert" role="alert">{examError}</div>}
+      {view === 'exam' && !isMarkdownOnly && (
+        <div className="exam-progress-panel">
+          <div><span>{saveStatus || 'Bài làm của bạn'}</span><strong>{answeredCount}/{questionSequence.length} câu đã trả lời</strong></div>
+          <div className="exam-progress-track"><span style={{ width: `${progressPercent}%` }} /></div>
+        </div>
+      )}
+      {view === 'exam' && settings.instructions && <div className="exam-instructions">ℹ {settings.instructions}</div>}
 
       <div className="exam-layout">
         {/* MAIN CONTENT */}
         <div className="exam-content" style={isMarkdownOnly ? { width: '100%' } : {}}>
-          {isMarkdownOnly ? (
+          {hideDetailedResult ? (
+            <div className="exam-submitted-card">
+              <span>✓</span>
+              <h2>Đã nộp bài thành công</h2>
+              <p>Giáo viên đã tắt chế độ xem điểm và đáp án sau khi nộp.</p>
+              <button type="button" className="btn-primary" onClick={handleBackToList}>Về danh sách đề</button>
+            </div>
+          ) : isMarkdownOnly ? (
             <div style={{ padding: '32px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
               <MarkdownContent>{markdownContent}</MarkdownContent>
             </div>
           ) : (
             <>
               {/* PART 1 */}
-              {data.part1_multipleChoice?.length > 0 && (
+              {data.part1_multipleChoice?.length > 0 && (!isSingleQuestion || data.part1_multipleChoice.some(showQuestion)) && (
             <div className="exam-part">
               <h2 className="part-title">PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn</h2>
               <p className="part-desc">Thí sinh trả lời từ câu 1 đến câu {data.part1_multipleChoice.length}. Mỗi câu hỏi thí sinh chỉ chọn một phương án.</p>
               
               {data.part1_multipleChoice.map((q, idx) => {
+                if (!showQuestion(q)) return null;
                 const correctOpt = q.options.find(o => o.isCorrect);
                 const userAns = userAnswers.part1[q.id];
                 const isCorrect = userAns === correctOpt?.key;
@@ -434,12 +547,13 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
           )}
 
           {/* PART 2 */}
-          {data.part2_trueFalse?.length > 0 && (
+          {data.part2_trueFalse?.length > 0 && (!isSingleQuestion || data.part2_trueFalse.some(showQuestion)) && (
             <div className="exam-part">
               <h2 className="part-title">PHẦN II. Câu trắc nghiệm đúng sai</h2>
               <p className="part-desc">Thí sinh trả lời từ câu 1 đến câu {data.part2_trueFalse.length}. Trong mỗi ý a), b), c), d) ở mỗi câu, thí sinh chọn đúng hoặc sai.</p>
               
               {data.part2_trueFalse.map((q, idx) => {
+                if (!showQuestion(q)) return null;
                 const userAns = userAnswers.part2[q.id] || {};
                 
                 return (
@@ -489,12 +603,13 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
           )}
 
           {/* PART 3 */}
-          {data.part3_shortAnswer?.length > 0 && (
+          {data.part3_shortAnswer?.length > 0 && (!isSingleQuestion || data.part3_shortAnswer.some(showQuestion)) && (
             <div className="exam-part">
               <h2 className="part-title">PHẦN III. Câu trắc nghiệm trả lời ngắn</h2>
               <p className="part-desc">Thí sinh trả lời từ câu 1 đến câu {data.part3_shortAnswer.length}.</p>
               
               {data.part3_shortAnswer.map((q, idx) => {
+                if (!showQuestion(q)) return null;
                 const userAns = userAnswers.part3[q.id] || "";
                 const isCorrect = userAns.trim() === q.correctAnswer;
                 
@@ -525,12 +640,21 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
               })}
             </div>
               )}
+              {isSingleQuestion && (
+                <div className="exam-question-navigation">
+                  <button type="button" disabled={currentQuestionIndex === 0 || settings.allowReview === false} onClick={() => setCurrentQuestionIndex(index => Math.max(0, index - 1))}>← Câu trước</button>
+                  <span>Câu {currentQuestionIndex + 1} / {questionSequence.length}</span>
+                  {currentQuestionIndex < questionSequence.length - 1
+                    ? <button type="button" className="next" onClick={() => setCurrentQuestionIndex(index => Math.min(questionSequence.length - 1, index + 1))}>Câu tiếp →</button>
+                    : <button type="button" className="submit" onClick={requestSubmitExam}>Nộp bài</button>}
+                </div>
+              )}
             </>
           )}
         </div>
 
         {/* SIDEBAR PALETTE */}
-        {!isMarkdownOnly && (
+        {!isMarkdownOnly && !hideDetailedResult && (
           <div className="exam-sidebar">
              <div className="palette-card glass">
               <h4>Bảng câu hỏi</h4>
@@ -590,7 +714,7 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
               )}
 
               {view === 'exam' && (
-                <button className="btn-primary w-100 mt-4" disabled={isSubmitting} onClick={handleSubmitExam}>
+                <button className="btn-primary w-100 mt-4" disabled={isSubmitting} onClick={requestSubmitExam}>
                   {isSubmitting ? 'Đang nộp…' : 'Nộp bài'}
                 </button>
               )}

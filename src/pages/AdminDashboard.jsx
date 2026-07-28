@@ -3,7 +3,8 @@ import './CouyenCommon.css'; // For glassmorphism styles
 import './Dashboard.css'; // For sidebar layout
 import './AdminDashboard.css';
 import { apiFetch } from '../api';
-import { hasCompleteAnswerKey, parseExamMarkdown } from '../examMarkdownParser';
+import { hasCompleteAnswerKey, hasExamQuestions, parseExamMarkdown } from '../examMarkdownParser';
+import ExamStudio from '../components/ExamStudio';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -124,16 +125,28 @@ const AdminDashboard = () => {
   };
 
   const handleAddExam = () => {
-    const title = prompt("Nhập tên đề thi mới:");
-    if (!title?.trim()) return;
     setNotice('');
     setExamError('');
-    // Keep the new exam as a local draft. It is only inserted after a valid
-    // file has been selected, preventing empty cards in the student page.
     setCurrentExam({
       id: `exam-${crypto.randomUUID()}`,
-      title: title.trim(),
+      title: 'Đề thi mới',
       fileUrl: '',
+      data: {
+        part1_multipleChoice: [],
+        part2_trueFalse: [],
+        part3_shortAnswer: []
+      },
+      settings: {
+        duration: 90,
+        passingScore: 5,
+        viewMode: 'all',
+        shuffleQuestions: false,
+        shuffleOptions: false,
+        showResult: true,
+        allowReview: true,
+        autoSave: true,
+        instructions: 'Đọc kỹ câu hỏi, kiểm tra đáp án trước khi nộp bài.'
+      },
       isDraft: true
     });
   };
@@ -143,6 +156,27 @@ const AdminDashboard = () => {
     const response = await apiFetch(`/exams/${encodeURIComponent(id)}`, { method: 'DELETE' });
     if (!response.ok) return alert('Không thể xóa đề thi.');
     setExams(exams.filter(e => e.id !== id));
+  };
+
+  const handleEditExam = exam => {
+    setNotice('');
+    setExamError('');
+    if (!exam.data && exam.markdownContent?.trim()) {
+      const parsedMarkdown = parseExamMarkdown(exam.markdownContent);
+      if (hasExamQuestions(parsedMarkdown)) {
+        setCurrentExam({
+          ...exam,
+          data: parsedMarkdown,
+          markdownContent: '',
+          sourceFormat: 'md'
+        });
+        if (!hasCompleteAnswerKey(parsedMarkdown)) {
+          setNotice('Đề Markdown cũ đã được chuyển vào trình chỉnh sửa. Hãy bổ sung các đáp án còn thiếu trước khi xuất bản.');
+        }
+        return;
+      }
+    }
+    setCurrentExam(exam);
   };
 
   const handleExamFile = async (file) => {
@@ -181,7 +215,7 @@ const AdminDashboard = () => {
       } else if (file.name.toLowerCase().endsWith('.md')) {
         if (!text.trim()) throw new Error('File Markdown đang trống.');
         const parsedMarkdown = parseExamMarkdown(text);
-        if (hasCompleteAnswerKey(parsedMarkdown)) {
+        if (hasExamQuestions(parsedMarkdown)) {
           setCurrentExam(current => ({
             ...current,
             data: parsedMarkdown,
@@ -190,10 +224,12 @@ const AdminDashboard = () => {
             fileName: file.name,
             fileUrl: ''
           }));
-          setNotice(`Đã nhận dạng ${parsedMarkdown.part1_multipleChoice.length + parsedMarkdown.part2_trueFalse.length + parsedMarkdown.part3_shortAnswer.length} câu hỏi từ file Markdown. Bấm “Lưu đề thi” để hoàn tất.`);
+          const totalQuestions = parsedMarkdown.part1_multipleChoice.length + parsedMarkdown.part2_trueFalse.length + parsedMarkdown.part3_shortAnswer.length;
+          setNotice(hasCompleteAnswerKey(parsedMarkdown)
+            ? `Đã nhận dạng ${totalQuestions} câu hỏi từ file Markdown. Bạn có thể xem trước, cấu hình rồi xuất bản.`
+            : `Đã nhận dạng ${totalQuestions} câu hỏi. Hãy bổ sung các đáp án còn thiếu trước khi xuất bản.`);
         } else {
-          setCurrentExam(current => ({ ...current, markdownContent: text, data: undefined, sourceFormat: 'md', fileName: file.name, fileUrl: '' }));
-          setNotice('File không dùng cú pháp đáp án của hệ thống nên sẽ được lưu dưới dạng tài liệu Markdown.');
+          throw new Error('Không nhận dạng được câu hỏi trong file Markdown. Hãy dùng tiêu đề PHẦN I/II/III và định dạng “**Câu 1:**”.');
         }
       } else {
         throw new Error('Chỉ hỗ trợ file .json hoặc .md.');
@@ -216,9 +252,6 @@ const AdminDashboard = () => {
       return;
     }
 
-    setIsSavingExam(true);
-    setExamError('');
-    setNotice('');
     let savedExam = { ...currentExam, title };
     if (savedExam.markdownContent?.trim()) {
       const parsedMarkdown = parseExamMarkdown(savedExam.markdownContent);
@@ -231,6 +264,26 @@ const AdminDashboard = () => {
         };
       }
     }
+    if (savedExam.data && !hasCompleteAnswerKey(savedExam.data)) {
+      setExamError('Đề chưa thể xuất bản: hãy kiểm tra mỗi câu có đủ nội dung và đáp án đúng.');
+      return;
+    }
+    savedExam.settings = {
+      duration: Number(savedExam.settings?.duration || savedExam.time || 90),
+      passingScore: 5,
+      viewMode: 'all',
+      shuffleQuestions: false,
+      shuffleOptions: false,
+      showResult: true,
+      allowReview: true,
+      autoSave: true,
+      instructions: '',
+      ...savedExam.settings
+    };
+    savedExam.time = savedExam.settings.duration;
+    setIsSavingExam(true);
+    setExamError('');
+    setNotice('');
     delete savedExam.isDraft;
     const exists = exams.some(exam => exam.id === savedExam.id);
     const updatedExams = exists
@@ -431,11 +484,20 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'exams' && !currentExam && (
-            <section className="admin-panel" aria-labelledby="exams-heading"><div className="admin-panel-header"><div><h2 id="exams-heading">Ngân hàng đề thi</h2><p>Tải trực tiếp file JSON hoặc Markdown lên Supabase.</p></div><button className="btn-primary" onClick={handleAddExam}>+ Tạo đề thi</button></div><div className="admin-card-grid">{exams.map((exam, index) => <article className="admin-content-card" key={exam.id}><div className={`admin-card-cover exam tone-${index % 4}`}><span aria-hidden="true">📝</span><b>{exam.data ? 'JSON' : exam.markdownContent ? 'MD' : 'Trống'}</b></div><div className="admin-card-body"><p>ĐỀ THI #{exam.id}</p><h3>{exam.title}</h3><small>{exam.fileName || (exam.data ? 'Đề JSON đã sẵn sàng' : exam.markdownContent ? 'Đề Markdown đã sẵn sàng' : 'Chưa có nội dung')}</small><div className="admin-card-actions"><button className="btn-secondary" onClick={() => { setNotice(''); setExamError(''); setCurrentExam(exam); }}>Chỉnh sửa đề</button><button className="admin-icon-delete" onClick={() => handleDeleteExam(exam.id)}>Xóa</button></div></div></article>)}</div></section>
+            <section className="admin-panel" aria-labelledby="exams-heading"><div className="admin-panel-header"><div><h2 id="exams-heading">Ngân hàng đề thi</h2><p>Tải trực tiếp file JSON hoặc Markdown lên Supabase.</p></div><button className="btn-primary" onClick={handleAddExam}>+ Tạo đề thi</button></div><div className="admin-card-grid">{exams.map((exam, index) => <article className="admin-content-card" key={exam.id}><div className={`admin-card-cover exam tone-${index % 4}`}><span aria-hidden="true">📝</span><b>{exam.data ? 'JSON' : exam.markdownContent ? 'MD' : 'Trống'}</b></div><div className="admin-card-body"><p>ĐỀ THI #{exam.id}</p><h3>{exam.title}</h3><small>{exam.fileName || (exam.data ? 'Đề JSON đã sẵn sàng' : exam.markdownContent ? 'Đề Markdown đã sẵn sàng' : 'Chưa có nội dung')}</small><div className="admin-card-actions"><button className="btn-secondary" onClick={() => handleEditExam(exam)}>Chỉnh sửa đề</button><button className="admin-icon-delete" onClick={() => handleDeleteExam(exam.id)}>Xóa</button></div></div></article>)}</div></section>
           )}
 
           {activeTab === 'exams' && currentExam && (
-            <section className="admin-panel admin-editor-panel" aria-labelledby="exam-editor-heading"><div className="admin-panel-header"><div><button className="admin-back" onClick={() => { setCurrentExam(null); setNotice(''); setExamError(''); }}>← Ngân hàng đề</button><h2 id="exam-editor-heading">{currentExam.title}</h2><p>Cập nhật tên và nội dung đề thi.</p></div><button className="btn-primary" disabled={isSavingExam} onClick={handleSaveCurrentExam}>{isSavingExam ? 'Đang tải lên…' : 'Lưu đề thi'}</button></div>{notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}{examError && <p className="admin-form-error" role="alert">{examError}</p>}<div className="admin-guide"><div className="admin-guide-title"><span aria-hidden="true">📤</span><div><strong>Tải đề thi trong 3 bước</strong><p>File được lưu trực tiếp vào database, không cần đưa lên GitHub.</p></div></div><ol className="admin-guide-steps"><li><b>1</b><span><strong>Chuẩn bị file</strong><small>JSON tương tác hoặc Markdown</small></span></li><li><b>2</b><span><strong>Chọn file từ máy</strong><small>Dung lượng tối đa 2 MB</small></span></li><li><b>3</b><span><strong>Lưu đề thi</strong><small>Học viên thấy ngay</small></span></li></ol><p className="admin-guide-note">✓ Hỗ trợ cả file JSON đơn và file JSON dạng danh sách do trình phân tích đề xuất ra.</p></div><div className="admin-exam-form"><label><span>Tên đề thi</span><input name="exam-title" autoComplete="off" value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Nhập tên đề thi…" /></label><div className="admin-upload-zone"><label htmlFor="exam-file"><strong>Chọn file đề thi</strong><span>Chấp nhận .json hoặc .md, tối đa 2 MB</span></label><input id="exam-file" name="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => { handleExamFile(e.target.files?.[0]); e.target.value = ''; }} /><p>{currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}</p></div></div></section>
+            <ExamStudio
+              exam={currentExam}
+              onChange={setCurrentExam}
+              onBack={() => { setCurrentExam(null); setNotice(''); setExamError(''); }}
+              onSave={handleSaveCurrentExam}
+              onFileSelect={handleExamFile}
+              isSaving={isSavingExam}
+              notice={notice}
+              error={examError}
+            />
           )}
         </div>
       </main>

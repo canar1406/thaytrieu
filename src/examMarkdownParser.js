@@ -15,15 +15,23 @@ export const hasExamQuestions = data => data && [
 export const hasCompleteAnswerKey = data => {
   if (!hasExamQuestions(data)) return false;
   const part1Valid = (data.part1_multipleChoice || []).every(question =>
-    question.options?.filter(option => option.isCorrect === true).length === 1
+    String(question.question || '').trim()
+    && question.options?.length >= 2
+    && question.options.every(option => String(option.text || '').trim())
+    && question.options.filter(option => option.isCorrect === true).length === 1
   );
   const part2Valid = (data.part2_trueFalse || []).every(question =>
-    question.statements?.length && question.statements.every(statement => typeof statement.isTrue === 'boolean')
+    String(question.question || '').trim()
+    && question.statements?.length
+    && question.statements.every(statement =>
+      String(statement.text || '').trim() && typeof statement.isTrue === 'boolean'
+    )
   );
   const part3Valid = (data.part3_shortAnswer || []).every(question =>
-    String(question.correctAnswer ?? '').trim().length > 0
+    String(question.question || '').trim()
+    && String(question.correctAnswer ?? '').trim()
   );
-  return part1Valid && part2Valid && part3Valid;
+  return Boolean(part1Valid && part2Valid && part3Valid);
 };
 
 export function parseExamMarkdown(content) {
