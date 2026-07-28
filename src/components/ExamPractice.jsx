@@ -4,6 +4,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import './ExamPractice.css';
 import { apiFetch } from '../api';
+import { hasCompleteAnswerKey, hasExamQuestions, parseExamMarkdown } from '../examMarkdownParser';
 
 const MarkdownContent = ({ children }) => (
   <ReactMarkdown
@@ -27,11 +28,7 @@ const normalizeExamData = source => {
   return record?.data || record;
 };
 
-const hasInteractiveQuestions = data => data && [
-  data.part1_multipleChoice,
-  data.part2_trueFalse,
-  data.part3_shortAnswer
-].some(part => Array.isArray(part) && part.length > 0);
+const hasInteractiveQuestions = hasExamQuestions;
 
 export default function ExamPractice({ onBackToDashboard, initialExams = null }) {
   const [exams, setExams] = useState(() => initialExams || []);
@@ -114,6 +111,10 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
         setSelectedExam({ ...exam, data: inlineData });
         setView('exam');
       } else if (exam.markdownContent?.trim()) {
+        const parsedMarkdown = parseExamMarkdown(exam.markdownContent);
+        if (hasCompleteAnswerKey(parsedMarkdown)) {
+          throw new Error('Đề này đang ở định dạng cũ. Quản trị viên cần mở đề, chọn lại file Markdown và bấm “Lưu đề thi”.');
+        }
         setSelectedExam(exam);
         setMarkdownContent(exam.markdownContent);
         setView('exam');
@@ -307,15 +308,18 @@ export default function ExamPractice({ onBackToDashboard, initialExams = null })
         {isLoading && <div className="exam-state" role="status">Đang tải danh sách đề thi…</div>}
         <div className="exam-grid">
           {exams.map(exam => {
-            const examData = normalizeExamData(exam.data);
-            const hasContent = Boolean(hasInteractiveQuestions(examData) || exam.markdownContent?.trim() || exam.fileUrl);
+            const inlineData = normalizeExamData(exam.data);
+            const parsedMarkdown = exam.markdownContent?.trim() ? parseExamMarkdown(exam.markdownContent) : null;
+            const needsMigration = !hasInteractiveQuestions(inlineData) && hasCompleteAnswerKey(parsedMarkdown);
+            const examData = inlineData;
+            const hasContent = Boolean(hasInteractiveQuestions(examData) || (!needsMigration && exam.markdownContent?.trim()) || exam.fileUrl);
             return (
             <div key={exam.id} className="exam-card">
               <div className="exam-card-content">
                  <h2>{exam.title.replace(/-/g, ' ')}</h2>
                  <p>Thời gian: {exam.time || 90} phút</p>
-                 <p>Cấu trúc: {hasInteractiveQuestions(examData) ? `${examData.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${examData.part2_trueFalse?.length || 0} câu đúng/sai, ${examData.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.markdownContent ? 'Đề đọc dạng Markdown' : exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
-                 <button type="button" className="btn-primary" disabled={!hasContent || Boolean(isStarting)} onClick={() => startExam(exam)}>{isStarting === exam.id ? 'Đang mở đề…' : hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
+                 <p>Cấu trúc: {needsMigration ? 'Đề cũ cần quản trị viên mở và lưu lại' : hasInteractiveQuestions(examData) ? `${examData.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${examData.part2_trueFalse?.length || 0} câu đúng/sai, ${examData.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.markdownContent ? 'Đề đọc dạng Markdown' : exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
+                 <button type="button" className="btn-primary" disabled={!hasContent || Boolean(isStarting)} onClick={() => startExam(exam)}>{isStarting === exam.id ? 'Đang mở đề…' : needsMigration ? 'Cần cập nhật đề' : hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
               </div>
             </div>
             );

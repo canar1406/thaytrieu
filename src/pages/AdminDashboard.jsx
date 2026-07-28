@@ -3,6 +3,7 @@ import './CouyenCommon.css'; // For glassmorphism styles
 import './Dashboard.css'; // For sidebar layout
 import './AdminDashboard.css';
 import { apiFetch } from '../api';
+import { hasCompleteAnswerKey, parseExamMarkdown } from '../examMarkdownParser';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -179,7 +180,21 @@ const AdminDashboard = () => {
         }));
       } else if (file.name.toLowerCase().endsWith('.md')) {
         if (!text.trim()) throw new Error('File Markdown đang trống.');
-        setCurrentExam(current => ({ ...current, markdownContent: text, data: undefined, fileName: file.name, fileUrl: '' }));
+        const parsedMarkdown = parseExamMarkdown(text);
+        if (hasCompleteAnswerKey(parsedMarkdown)) {
+          setCurrentExam(current => ({
+            ...current,
+            data: parsedMarkdown,
+            markdownContent: '',
+            sourceFormat: 'md',
+            fileName: file.name,
+            fileUrl: ''
+          }));
+          setNotice(`Đã nhận dạng ${parsedMarkdown.part1_multipleChoice.length + parsedMarkdown.part2_trueFalse.length + parsedMarkdown.part3_shortAnswer.length} câu hỏi từ file Markdown. Bấm “Lưu đề thi” để hoàn tất.`);
+        } else {
+          setCurrentExam(current => ({ ...current, markdownContent: text, data: undefined, sourceFormat: 'md', fileName: file.name, fileUrl: '' }));
+          setNotice('File không dùng cú pháp đáp án của hệ thống nên sẽ được lưu dưới dạng tài liệu Markdown.');
+        }
       } else {
         throw new Error('Chỉ hỗ trợ file .json hoặc .md.');
       }
@@ -204,7 +219,18 @@ const AdminDashboard = () => {
     setIsSavingExam(true);
     setExamError('');
     setNotice('');
-    const savedExam = { ...currentExam, title };
+    let savedExam = { ...currentExam, title };
+    if (savedExam.markdownContent?.trim()) {
+      const parsedMarkdown = parseExamMarkdown(savedExam.markdownContent);
+      if (hasCompleteAnswerKey(parsedMarkdown)) {
+        savedExam = {
+          ...savedExam,
+          data: parsedMarkdown,
+          markdownContent: '',
+          sourceFormat: 'md'
+        };
+      }
+    }
     delete savedExam.isDraft;
     const exists = exams.some(exam => exam.id === savedExam.id);
     const updatedExams = exists
