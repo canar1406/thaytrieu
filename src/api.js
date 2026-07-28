@@ -10,6 +10,23 @@ const requireClient = () => {
   if (!isSupabaseConfigured) throw new Error('Chưa cấu hình VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY.');
 };
 
+const normalizeExamPayload = payload => {
+  const source = Array.isArray(payload) ? payload[0] : payload;
+  if (!source || typeof source !== 'object') return {};
+
+  // Older parser exports are arrays containing a complete exam record. Accept
+  // those records so existing Supabase rows keep working without a re-upload.
+  if (Array.isArray(source.data)) {
+    const embedded = source.data[0];
+    if (embedded && typeof embedded === 'object') {
+      return embedded.data
+        ? { ...source, ...embedded, data: embedded.data }
+        : { ...source, data: embedded };
+    }
+  }
+  return source;
+};
+
 async function currentProfile() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
@@ -49,7 +66,7 @@ export async function apiFetch(path, options = {}) {
   const courseMatch = path.match(/^\/courses\/(\d+)$/);
   if (courseMatch && method === 'GET') {
     return result(await supabase.from('courses').select('id,title,description,content').eq('id', courseMatch[1]).single(), r => ({
-      ...(r.content || {}), id: String(r.id), title: r.title, desc: r.description
+      ...r.content, id: String(r.id), title: r.title, desc: r.description
     }));
   }
   if (path === '/courses' && method === 'POST') {
@@ -77,7 +94,11 @@ export async function apiFetch(path, options = {}) {
     const query = profile?.role === 'admin'
       ? await supabase.from('exams').select('id,title,payload')
       : await supabase.rpc('get_student_exams');
-    return result(query, rows => rows.map(r => ({ id: r.id, title: r.title, ...r.payload })));
+    return result(query, rows => rows.map(r => ({
+      ...normalizeExamPayload(r.payload),
+      id: r.id,
+      title: r.title
+    })));
   }
   if (path === '/exams' && method === 'POST') {
     return result(await supabase.from('exams').upsert(body.map(({ id, title, ...payload }) => ({ id: String(id), title, payload }))), () => ({ success: true }));

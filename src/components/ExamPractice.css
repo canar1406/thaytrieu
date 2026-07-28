@@ -2,10 +2,10 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
+  padding: clamp(18px, 2.6vw, 38px);
+  min-height: 0;
 }
 
 /* LIST VIEW */
@@ -16,9 +16,28 @@
   margin-bottom: 24px;
 }
 
+.exam-header-bar h1 {
+  margin: 2px 0 4px;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  line-height: 1.2;
+  color: #1d1d1f;
+}
+
+.exam-header-bar p:last-child {
+  color: #636366;
+  font-size: .92rem;
+}
+
+.exam-eyebrow {
+  color: #2451d1;
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
 .exam-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
   gap: 20px;
 }
 
@@ -30,7 +49,16 @@
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 220px;
 }
+
+.exam-card-content {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.exam-card-content .btn-primary { margin-top: auto; }
 
 .exam-card:hover {
   transform: translateY(-4px);
@@ -130,24 +158,24 @@
 }
 
 .exam-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 290px);
   gap: 24px;
   align-items: flex-start;
 }
 
 .exam-content {
-  flex: 1;
+  min-width: 0;
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 24px;
-  padding: 32px;
+  padding: clamp(18px, 2.4vw, 32px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .exam-sidebar {
-  width: 320px;
-  flex-shrink: 0;
+  width: auto;
   position: sticky;
   top: 96px;
 }
@@ -369,6 +397,7 @@
 .stmt-actions {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .tf-btn {
@@ -444,3 +473,82 @@
 .mt-4 { margin-top: 16px; }
 .text-danger { color: #ff3b30; }
 .text-success { color: #34c759; }
+
+.exam-alert,
+.exam-state {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  font-size: .9rem;
+}
+
+.exam-alert {
+  border: 1px solid #f2b8b5;
+  color: #a51d17;
+  background: rgba(255, 239, 238, .92);
+}
+
+.exam-state {
+  grid-column: 1 / -1;
+  border: 1px dashed #b9c6dc;
+  color: #59657a;
+  background: rgba(255, 255, 255, .45);
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .exam-layout {
+    grid-template-columns: minmax(0, 1fr) 230px;
+    gap: 16px;
+  }
+
+  .palette-card { padding: 16px; }
+  .palette-grid { grid-template-columns: repeat(4, 1fr); }
+  .exam-topbar .nav-links { display: none !important; }
+}
+
+@media (max-width: 840px) {
+  .exam-layout { display: flex; flex-direction: column; }
+  .exam-content { width: 100%; order: 2; }
+  .exam-sidebar {
+    position: static;
+    width: 100%;
+    order: 1;
+  }
+  .palette-card { width: 100%; }
+  .palette-card h4 { text-align: left; }
+  .palette-section { display: inline-block; width: auto; margin: 0 18px 8px 0; vertical-align: top; }
+  .palette-grid { display: flex; flex-wrap: wrap; }
+  .palette-btn { width: 44px; height: 44px; aspect-ratio: auto; }
+}
+
+@media (max-width: 640px) {
+  .exam-practice-container { padding: 14px 12px 28px; }
+  .exam-topbar {
+    height: auto;
+    min-height: 54px;
+    margin: 0 10px;
+    padding: 8px 10px;
+  }
+  .exam-topbar .nav-logo { min-width: 0; gap: 6px !important; }
+  .exam-topbar .nav-logo > span {
+    min-width: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .exam-topbar .nav-logo > span > span:first-child { display: none; }
+  .exam-topbar .topbar-actions { gap: 6px !important; }
+  .exam-topbar .timer { padding: 5px 8px !important; font-size: .82rem; }
+  .exam-topbar .header-right .btn-primary { padding: 7px 11px !important; font-size: .78rem; }
+  .options-grid { grid-template-columns: 1fr; }
+  .question-block { padding: 16px; margin-bottom: 18px; }
+  .part-title { font-size: 1.15rem; }
+  .exam-part { margin-bottom: 30px; }
+  .statement-row { align-items: flex-start; flex-direction: column; }
+  .stmt-actions { width: 100%; }
+  .tf-btn { flex: 1; min-height: 42px; }
+  .short-answer-input input { max-width: none; }
+}

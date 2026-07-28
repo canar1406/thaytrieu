@@ -20,6 +20,8 @@ const AdminDashboard = () => {
   const [currentCourse, setCurrentCourse] = useState(null); // When editing a course
   const [exams, setExams] = useState([]);
   const [currentExam, setCurrentExam] = useState(null); // When editing an exam
+  const [isSavingExam, setIsSavingExam] = useState(false);
+  const [examError, setExamError] = useState('');
 
   useEffect(() => {
     apiFetch('/me').then(r => r.ok ? r.json() : null).then(data => {
@@ -109,36 +111,30 @@ const AdminDashboard = () => {
     setSelectedUserId(newId);
   };
 
-  const handleSaveExams = async (updatedExams) => {
-    try {
-      const response = await apiFetch(`/exams`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedExams)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Không thể lưu đề thi');
-      return true;
-    } catch (e) { alert(`Lỗi khi lưu đề thi: ${e.message}`); return false; }
+  const handleSaveExams = async updatedExams => {
+    const response = await apiFetch(`/exams`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedExams)
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Không thể lưu đề thi');
+    return true;
   };
 
   const handleAddExam = () => {
     const title = prompt("Nhập tên đề thi mới:");
-    if (!title) return;
-    let maxId = 0;
-    exams.forEach(e => {
-      const num = parseInt(e.id);
-      if (!isNaN(num) && num > maxId) maxId = num;
+    if (!title?.trim()) return;
+    setNotice('');
+    setExamError('');
+    // Keep the new exam as a local draft. It is only inserted after a valid
+    // file has been selected, preventing empty cards in the student page.
+    setCurrentExam({
+      id: `exam-${crypto.randomUUID()}`,
+      title: title.trim(),
+      fileUrl: '',
+      isDraft: true
     });
-    const newId = String(maxId + 1);
-    const newExam = {
-      id: newId,
-      title,
-      fileUrl: ''
-    };
-    const updatedExams = [...exams, newExam];
-    setExams(updatedExams);
-    handleSaveExams(updatedExams);
   };
 
   const handleDeleteExam = async (id) => {
@@ -150,19 +146,79 @@ const AdminDashboard = () => {
 
   const handleExamFile = async (file) => {
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return alert('File đề thi phải nhỏ hơn 2 MB.');
+    setExamError('');
+    setNotice('');
+    if (file.size > 2 * 1024 * 1024) {
+      setExamError('File đề thi phải nhỏ hơn 2 MB.');
+      return;
+    }
     try {
       const text = await file.text();
       if (file.name.toLowerCase().endsWith('.json')) {
         const parsed = JSON.parse(text);
-        setCurrentExam(current => ({ ...current, data: parsed.data || parsed, markdownContent: '', fileName: file.name, fileUrl: '' }));
+        const record = Array.isArray(parsed)
+          ? parsed[0]
+          : Array.isArray(parsed?.exams)
+            ? parsed.exams[0]
+            : parsed;
+        const examData = record?.data || record;
+        const hasQuestions = examData && typeof examData === 'object' && [
+          examData.part1_multipleChoice,
+          examData.part2_trueFalse,
+          examData.part3_shortAnswer
+        ].some(Array.isArray);
+        if (!hasQuestions) {
+          throw new Error('JSON không có cấu trúc đề thi hợp lệ.');
+        }
+        setCurrentExam(current => ({
+          ...current,
+          data: examData,
+          markdownContent: '',
+          fileName: file.name,
+          fileUrl: ''
+        }));
       } else if (file.name.toLowerCase().endsWith('.md')) {
+        if (!text.trim()) throw new Error('File Markdown đang trống.');
         setCurrentExam(current => ({ ...current, markdownContent: text, data: undefined, fileName: file.name, fileUrl: '' }));
       } else {
-        alert('Chỉ hỗ trợ file .json hoặc .md.');
+        throw new Error('Chỉ hỗ trợ file .json hoặc .md.');
       }
-    } catch {
-      alert('Không đọc được file. Nếu là JSON, hãy kiểm tra lại định dạng file.');
+    } catch (error) {
+      setExamError(error instanceof SyntaxError
+        ? 'JSON không hợp lệ. Hãy kiểm tra dấu ngoặc và dấu phẩy trong file.'
+        : error.message || 'Không đọc được file đề thi.');
+    }
+  };
+
+  const handleSaveCurrentExam = async () => {
+    const title = currentExam?.title?.trim();
+    if (!title) {
+      setExamError('Vui lòng nhập tên đề thi.');
+      return;
+    }
+    if (!currentExam.data && !currentExam.markdownContent) {
+      setExamError('Vui lòng chọn file JSON hoặc Markdown trước khi lưu.');
+      return;
+    }
+
+    setIsSavingExam(true);
+    setExamError('');
+    setNotice('');
+    const savedExam = { ...currentExam, title };
+    delete savedExam.isDraft;
+    const exists = exams.some(exam => exam.id === savedExam.id);
+    const updatedExams = exists
+      ? exams.map(exam => exam.id === savedExam.id ? savedExam : exam)
+      : [...exams, savedExam];
+    try {
+      await handleSaveExams(updatedExams);
+      setExams(updatedExams);
+      setCurrentExam(savedExam);
+      setNotice('Đã tải và lưu đề thi thành công. Học viên có thể làm đề ngay.');
+    } catch (error) {
+      setExamError(`Không thể lưu đề thi: ${error.message}`);
+    } finally {
+      setIsSavingExam(false);
     }
   };
 
@@ -257,6 +313,7 @@ const AdminDashboard = () => {
     setCurrentCourse(null);
     setCurrentExam(null);
     setNotice('');
+    setExamError('');
   };
 
   return (
@@ -348,11 +405,11 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'exams' && !currentExam && (
-            <section className="admin-panel" aria-labelledby="exams-heading"><div className="admin-panel-header"><div><h2 id="exams-heading">Ngân hàng đề thi</h2><p>Tải trực tiếp file JSON hoặc Markdown lên Supabase.</p></div><button className="btn-primary" onClick={handleAddExam}>+ Tạo đề thi</button></div><div className="admin-card-grid">{exams.map((exam, index) => <article className="admin-content-card" key={exam.id}><div className={`admin-card-cover exam tone-${index % 4}`}><span aria-hidden="true">📝</span><b>{exam.data ? 'JSON' : exam.markdownContent ? 'MD' : 'Trống'}</b></div><div className="admin-card-body"><p>ĐỀ THI #{exam.id}</p><h3>{exam.title}</h3><small>{exam.fileName || (exam.data ? 'Đề JSON đã sẵn sàng' : exam.markdownContent ? 'Đề Markdown đã sẵn sàng' : 'Chưa có nội dung')}</small><div className="admin-card-actions"><button className="btn-secondary" onClick={() => setCurrentExam(exam)}>Chỉnh sửa đề</button><button className="admin-icon-delete" onClick={() => handleDeleteExam(exam.id)}>Xóa</button></div></div></article>)}</div></section>
+            <section className="admin-panel" aria-labelledby="exams-heading"><div className="admin-panel-header"><div><h2 id="exams-heading">Ngân hàng đề thi</h2><p>Tải trực tiếp file JSON hoặc Markdown lên Supabase.</p></div><button className="btn-primary" onClick={handleAddExam}>+ Tạo đề thi</button></div><div className="admin-card-grid">{exams.map((exam, index) => <article className="admin-content-card" key={exam.id}><div className={`admin-card-cover exam tone-${index % 4}`}><span aria-hidden="true">📝</span><b>{exam.data ? 'JSON' : exam.markdownContent ? 'MD' : 'Trống'}</b></div><div className="admin-card-body"><p>ĐỀ THI #{exam.id}</p><h3>{exam.title}</h3><small>{exam.fileName || (exam.data ? 'Đề JSON đã sẵn sàng' : exam.markdownContent ? 'Đề Markdown đã sẵn sàng' : 'Chưa có nội dung')}</small><div className="admin-card-actions"><button className="btn-secondary" onClick={() => { setNotice(''); setExamError(''); setCurrentExam(exam); }}>Chỉnh sửa đề</button><button className="admin-icon-delete" onClick={() => handleDeleteExam(exam.id)}>Xóa</button></div></div></article>)}</div></section>
           )}
 
           {activeTab === 'exams' && currentExam && (
-            <section className="admin-panel admin-editor-panel" aria-labelledby="exam-editor-heading"><div className="admin-panel-header"><div><button className="admin-back" onClick={() => setCurrentExam(null)}>← Ngân hàng đề</button><h2 id="exam-editor-heading">{currentExam.title}</h2><p>Cập nhật tên và nội dung đề thi.</p></div><button className="btn-primary" onClick={async () => { const newExams = exams.map(exam => exam.id === currentExam.id ? currentExam : exam); setExams(newExams); await handleSaveExams(newExams); setNotice('Đã lưu đề thi.'); }}>Lưu đề thi</button></div>{notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}<div className="admin-guide"><div className="admin-guide-title"><span aria-hidden="true">📤</span><div><strong>Tải đề thi trong 3 bước</strong><p>File được lưu trực tiếp vào database, không cần đưa lên GitHub.</p></div></div><ol className="admin-guide-steps"><li><b>1</b><span><strong>Chuẩn bị file</strong><small>JSON tương tác hoặc Markdown</small></span></li><li><b>2</b><span><strong>Chọn file từ máy</strong><small>Dung lượng tối đa 2 MB</small></span></li><li><b>3</b><span><strong>Lưu đề thi</strong><small>Học viên thấy ngay</small></span></li></ol><p className="admin-guide-note">✓ JSON hỗ trợ chấm điểm tự động · Markdown phù hợp để đọc hoặc in.</p></div><div className="admin-exam-form"><label><span>Tên đề thi</span><input name="exam-title" autoComplete="off" value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Nhập tên đề thi…" /></label><div className="admin-upload-zone"><label htmlFor="exam-file"><strong>Chọn file đề thi</strong><span>Chấp nhận .json hoặc .md, tối đa 2 MB</span></label><input id="exam-file" name="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => handleExamFile(e.target.files?.[0])} /><p>{currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}</p></div></div></section>
+            <section className="admin-panel admin-editor-panel" aria-labelledby="exam-editor-heading"><div className="admin-panel-header"><div><button className="admin-back" onClick={() => { setCurrentExam(null); setNotice(''); setExamError(''); }}>← Ngân hàng đề</button><h2 id="exam-editor-heading">{currentExam.title}</h2><p>Cập nhật tên và nội dung đề thi.</p></div><button className="btn-primary" disabled={isSavingExam} onClick={handleSaveCurrentExam}>{isSavingExam ? 'Đang tải lên…' : 'Lưu đề thi'}</button></div>{notice && <p className="admin-notice" role="status" aria-live="polite">{notice}</p>}{examError && <p className="admin-form-error" role="alert">{examError}</p>}<div className="admin-guide"><div className="admin-guide-title"><span aria-hidden="true">📤</span><div><strong>Tải đề thi trong 3 bước</strong><p>File được lưu trực tiếp vào database, không cần đưa lên GitHub.</p></div></div><ol className="admin-guide-steps"><li><b>1</b><span><strong>Chuẩn bị file</strong><small>JSON tương tác hoặc Markdown</small></span></li><li><b>2</b><span><strong>Chọn file từ máy</strong><small>Dung lượng tối đa 2 MB</small></span></li><li><b>3</b><span><strong>Lưu đề thi</strong><small>Học viên thấy ngay</small></span></li></ol><p className="admin-guide-note">✓ Hỗ trợ cả file JSON đơn và file JSON dạng danh sách do trình phân tích đề xuất ra.</p></div><div className="admin-exam-form"><label><span>Tên đề thi</span><input name="exam-title" autoComplete="off" value={currentExam.title} onChange={e => setCurrentExam({...currentExam, title: e.target.value})} className="input-field" placeholder="Nhập tên đề thi…" /></label><div className="admin-upload-zone"><label htmlFor="exam-file"><strong>Chọn file đề thi</strong><span>Chấp nhận .json hoặc .md, tối đa 2 MB</span></label><input id="exam-file" name="exam-file" type="file" accept=".json,.md,application/json,text/markdown" onChange={e => { handleExamFile(e.target.files?.[0]); e.target.value = ''; }} /><p>{currentExam.fileName ? `Đã chọn: ${currentExam.fileName}` : currentExam.data ? 'Đề JSON hiện tại đã sẵn sàng.' : currentExam.markdownContent ? 'Đề Markdown hiện tại đã sẵn sàng.' : 'Chưa chọn file.'}</p></div></div></section>
           )}
         </div>
       </main>

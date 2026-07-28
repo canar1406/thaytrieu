@@ -17,8 +17,28 @@ const MarkdownContent = ({ children }) => (
   </ReactMarkdown>
 );
 
-export default function ExamPractice({ onBackToDashboard }) {
-  const [exams, setExams] = useState([]);
+const normalizeExamData = source => {
+  if (!source) return null;
+  const record = Array.isArray(source)
+    ? source[0]
+    : Array.isArray(source.data)
+      ? source.data[0]
+      : source;
+  return record?.data || record;
+};
+
+const hasInteractiveQuestions = data => data && [
+  data.part1_multipleChoice,
+  data.part2_trueFalse,
+  data.part3_shortAnswer
+].some(part => Array.isArray(part) && part.length > 0);
+
+export default function ExamPractice({ onBackToDashboard, initialExams = null }) {
+  const [exams, setExams] = useState(() => initialExams || []);
+  const [isLoading, setIsLoading] = useState(!initialExams);
+  const [isStarting, setIsStarting] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [examError, setExamError] = useState('');
   const [view, setView] = useState('list'); // 'list', 'exam', 'result'
   const [selectedExam, setSelectedExam] = useState(null);
   
@@ -29,22 +49,37 @@ export default function ExamPractice({ onBackToDashboard }) {
 
   const handleSubmitExam = useCallback(async () => {
     clearInterval(timerRef.current);
-    if (!selectedExam?.id) return;
-    const response = await apiFetch(`/exams/${encodeURIComponent(selectedExam.id)}/submit`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userAnswers)
-    });
-    const result = await response.json();
-    if (!response.ok) return alert(result.error || 'Không thể nộp bài.');
-    setSelectedExam(current => ({ ...current, data: result.data }));
-    setView('result');
-  }, [selectedExam, userAnswers]);
+    if (!selectedExam?.id || isSubmitting) return;
+    setIsSubmitting(true);
+    setExamError('');
+    try {
+      const response = await apiFetch(`/exams/${encodeURIComponent(selectedExam.id)}/submit`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userAnswers)
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Không thể nộp bài.');
+      const resultData = normalizeExamData(result.data);
+      if (!hasInteractiveQuestions(resultData)) throw new Error('Máy chủ không trả về đáp án hợp lệ.');
+      setSelectedExam(current => ({ ...current, data: resultData }));
+      setView('result');
+    } catch (error) {
+      setExamError(error.message || 'Không thể nộp bài. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isSubmitting, selectedExam, userAnswers]);
 
   useEffect(() => {
+    if (initialExams) return;
     apiFetch('/exams')
-      .then(res => res.json())
-      .then(data => setExams(Array.isArray(data) ? data : []))
-      .catch(err => console.error("Error loading exams:", err));
-  }, []);
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Không thể tải danh sách đề thi.');
+        setExams(Array.isArray(data) ? data : []);
+      })
+      .catch(error => setExamError(error.message || 'Không thể tải danh sách đề thi.'))
+      .finally(() => setIsLoading(false));
+  }, [initialExams]);
 
   useEffect(() => {
     if (view === 'exam' && timeLeft > 0) {
@@ -67,39 +102,53 @@ export default function ExamPractice({ onBackToDashboard }) {
   const [markdownContent, setMarkdownContent] = useState('');
 
   const startExam = async (exam) => {
-    setSelectedExam(exam);
+    setIsStarting(exam.id);
+    setExamError('');
     setUserAnswers({ part1: {}, part2: {}, part3: {} });
-    setTimeLeft(90 * 60);
+    setTimeLeft((Number(exam.time) || 90) * 60);
     setMarkdownContent('');
 
-    if (exam.markdownContent) {
-      setMarkdownContent(exam.markdownContent);
-      setView('exam');
-    } else if (exam.fileUrl) {
-      try {
+    try {
+      const inlineData = normalizeExamData(exam.data);
+      if (hasInteractiveQuestions(inlineData)) {
+        setSelectedExam({ ...exam, data: inlineData });
+        setView('exam');
+      } else if (exam.markdownContent?.trim()) {
+        setSelectedExam(exam);
+        setMarkdownContent(exam.markdownContent);
+        setView('exam');
+      } else if (exam.fileUrl) {
         const url = exam.fileUrl.startsWith('/') ? '.' + exam.fileUrl : exam.fileUrl;
         const res = await fetch(url);
+        if (!res.ok) throw new Error(`Không thể tải file (${res.status}).`);
         if (exam.fileUrl.endsWith('.json')) {
           const fetchedData = await res.json();
-          setSelectedExam({ ...exam, data: fetchedData.data || fetchedData });
+          const normalizedData = normalizeExamData(fetchedData);
+          if (!hasInteractiveQuestions(normalizedData)) throw new Error('File JSON không có cấu trúc đề thi hợp lệ.');
+          setSelectedExam({ ...exam, data: normalizedData });
           setView('exam');
         } else {
           const text = await res.text();
+          if (!text.trim()) throw new Error('File đề thi đang trống.');
+          setSelectedExam(exam);
           setMarkdownContent(text);
           setView('exam');
         }
-      } catch (err) {
-        console.error("Error fetching exam:", err);
-        alert("Không thể tải file đề thi: " + exam.fileUrl);
+      } else {
+        throw new Error('Đề thi này chưa có nội dung. Vui lòng báo quản trị viên tải lại file.');
       }
-    } else {
-      setView('exam');
+    } catch (error) {
+      setSelectedExam(null);
+      setExamError(error.message || 'Không thể mở đề thi.');
+    } finally {
+      setIsStarting('');
     }
   };
 
   const handleBackToList = () => {
     setView('list');
     setSelectedExam(null);
+    setExamError('');
   };
 
   const formatTime = (seconds) => {
@@ -123,7 +172,7 @@ export default function ExamPractice({ onBackToDashboard }) {
       ...prev,
       part2: {
         ...prev.part2,
-        [qId]: { ...(prev.part2[qId] || {}), [statementId]: boolValue }
+        [qId]: { ...prev.part2[qId], [statementId]: boolValue }
       }
     }));
   };
@@ -229,7 +278,7 @@ export default function ExamPractice({ onBackToDashboard }) {
     return (
       <>
         <div className="topbar-wrapper">
-          <header className="topbar">
+          <header className="topbar exam-topbar">
             <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button aria-label="Quay lại Dashboard" className="topbar-btn" onClick={onBackToDashboard} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
@@ -248,24 +297,30 @@ export default function ExamPractice({ onBackToDashboard }) {
         </div>
         <div className="exam-practice-container list-view">
           <div className="exam-header-bar">
-             <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Danh sách đề thi</h1>
+             <div>
+               <p className="exam-eyebrow">LUYỆN TẬP</p>
+               <h1>Danh sách đề thi</h1>
+               <p>Chọn một đề để bắt đầu làm bài và theo dõi thời gian.</p>
+             </div>
           </div>
-        
+        {examError && <div className="exam-alert" role="alert">{examError}</div>}
+        {isLoading && <div className="exam-state" role="status">Đang tải danh sách đề thi…</div>}
         <div className="exam-grid">
           {exams.map(exam => {
-            const hasContent = Boolean(exam.data || exam.markdownContent || exam.fileUrl);
+            const examData = normalizeExamData(exam.data);
+            const hasContent = Boolean(hasInteractiveQuestions(examData) || exam.markdownContent?.trim() || exam.fileUrl);
             return (
             <div key={exam.id} className="exam-card">
               <div className="exam-card-content">
                  <h2>{exam.title.replace(/-/g, ' ')}</h2>
                  <p>Thời gian: {exam.time || 90} phút</p>
-                 <p>Cấu trúc: {exam.data ? `${exam.data.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${exam.data.part2_trueFalse?.length || 0} câu đúng/sai, ${exam.data.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
-                 <button className="btn-primary" disabled={!hasContent} onClick={() => startExam(exam)}>{hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
+                 <p>Cấu trúc: {hasInteractiveQuestions(examData) ? `${examData.part1_multipleChoice?.length || 0} câu trắc nghiệm, ${examData.part2_trueFalse?.length || 0} câu đúng/sai, ${examData.part3_shortAnswer?.length || 0} câu trả lời ngắn` : (exam.markdownContent ? 'Đề đọc dạng Markdown' : exam.fileUrl ? `File: ${exam.fileUrl}` : 'Đang cập nhật')}</p>
+                 <button type="button" className="btn-primary" disabled={!hasContent || Boolean(isStarting)} onClick={() => startExam(exam)}>{isStarting === exam.id ? 'Đang mở đề…' : hasContent ? 'Bắt đầu làm bài' : 'Chưa có nội dung'}</button>
               </div>
             </div>
             );
           })}
-          {exams.length === 0 && <p className="text-muted">Chưa có đề thi nào. Hãy thêm file .md vào thư mục exams.</p>}
+          {!isLoading && exams.length === 0 && <div className="exam-state">Chưa có đề thi nào được phát hành.</div>}
         </div>
       </div>
     </>
@@ -279,7 +334,7 @@ export default function ExamPractice({ onBackToDashboard }) {
     <>
       {/* HEADER INTEGRATED INTO TOPBAR */}
       <div className="topbar-wrapper">
-        <header className="topbar">
+        <header className="topbar exam-topbar">
           <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button aria-label="Quay lại danh sách đề" className="topbar-btn" onClick={handleBackToList} style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: '8px' }}>
                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"></path></svg>
@@ -305,7 +360,7 @@ export default function ExamPractice({ onBackToDashboard }) {
                </div>
              )}
              {view === 'exam' ? (
-               !isMarkdownOnly && <button className="btn-primary" onClick={handleSubmitExam} style={{ margin: 0, padding: '8px 24px', borderRadius: 'var(--radius-full)' }}>Nộp bài</button>
+               !isMarkdownOnly && <button className="btn-primary" disabled={isSubmitting} onClick={handleSubmitExam} style={{ margin: 0, padding: '8px 24px', borderRadius: 'var(--radius-full)' }}>{isSubmitting ? 'Đang nộp…' : 'Nộp bài'}</button>
              ) : (
                !isMarkdownOnly && <div className="score-badge" style={{ background: '#34c759', color: 'white', padding: '8px 20px', borderRadius: 'var(--radius-full)', fontWeight: 700, margin: 0, boxShadow: '0 4px 12px rgba(52, 199, 89, 0.3)' }}>Điểm: {calculateScore()}/10</div>
              )}
@@ -314,6 +369,7 @@ export default function ExamPractice({ onBackToDashboard }) {
       </div>
 
       <div className={`exam-practice-container ${view}-view`}>
+      {examError && <div className="exam-alert" role="alert">{examError}</div>}
 
       <div className="exam-layout">
         {/* MAIN CONTENT */}
@@ -530,8 +586,8 @@ export default function ExamPractice({ onBackToDashboard }) {
               )}
 
               {view === 'exam' && (
-                <button className="btn-primary w-100 mt-4" onClick={handleSubmitExam}>
-                  Nộp bài
+                <button className="btn-primary w-100 mt-4" disabled={isSubmitting} onClick={handleSubmitExam}>
+                  {isSubmitting ? 'Đang nộp…' : 'Nộp bài'}
                 </button>
               )}
            </div>
